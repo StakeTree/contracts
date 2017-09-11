@@ -11,6 +11,7 @@ contract Patronage {
   uint totalCurrentFunders = 0;
   uint withdrawalCounter = 0;
   address public beneficiary;
+  uint public minimumFundingAmount = 1 wei; // Prevent spam & support meaningful contributions for now
   uint public withdrawalPeriod = 20 minutes;
   uint public lastWithdrawal;
   uint public nextWithdrawal;
@@ -45,7 +46,7 @@ contract Patronage {
   }
 
 	function () payable {
-    if(msg.value > 0){
+    if(msg.value > minimumFundingAmount){
       uint currentFunderBalance = balanceOf(msg.sender);
 
       // Only increase total funders when they are a new funder

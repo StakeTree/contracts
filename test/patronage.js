@@ -13,6 +13,10 @@ contract('Patronage', function(accounts) {
   const account_e = accounts[4];
   const account_f = accounts[5];
 
+  const testingAmounts = {
+
+  };
+
 
   beforeEach(async () => {
     instance = await Patronage.deployed();
@@ -25,13 +29,24 @@ contract('Patronage', function(accounts) {
       assert.equal(beneficiary, account_a, "Beneficiary address has been set");
     });
 
+    // it("should have correct minimum funding amount", async () => { 
+    //   const min = await instance.minimumFundingAmount.call();
+    //   console.log(min);
+    //   assert.equal(min, 1000000000000000, "Minimum amount is set correctly to 1 finney");
+    // });
+
+    it("should have correct minimum funding amount", async () => { 
+      const min = await instance.minimumFundingAmount.call();
+      assert.equal(min, 1, "Minimum amount is set correctly to 1 wei");
+    });
+
     it("should fail setting beneficiary address again", async () => {
       try {
         await instance.setInitialBeneficiary(account_a);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
         return;
-      }    
+      }
     });
 
     // Back in time for testing purposes
