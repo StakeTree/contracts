@@ -34,6 +34,19 @@ contract('Patronage', function(accounts) {
       }    
     });
 
+    // Back in time for testing purposes
+    it("should set initial next withdrawal period in correct timeframe", async () => {
+      const withdrawalPeriod = await instance.withdrawalPeriod.call();
+      const nowUnix = new Date().getTime()/1000;
+      const reverseTime = parseInt(nowUnix.toFixed(0), 10)-withdrawalPeriod-10;
+      await instance.setInitialNextWithdrawal(reverseTime);
+
+      const nextWithdrawal = await instance.nextWithdrawal.call();
+      const lastWithdrawal = await instance.lastWithdrawal.call();
+      const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];
+      assert.equal(timingIsCorrect, true, "Contract withdrawal timing is correctly setup");
+    });
+
     it("should get initial balance of contract", async () => {
       const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Contract initiated with 0 balance");
@@ -104,11 +117,21 @@ contract('Patronage', function(accounts) {
       assert.equal(balanceAfter, 2250, "Beneficiary has withdrawn 10%");
     });
 
+    it("should fail withdrawing to beneficiary", async () => {
+      try {
+        await instance.withdrawToBeneficiary();
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
     it("should get withdrawal counter", async () => {
       const counter = await instance.getWithdrawalCounter.call();
       assert.equal(counter, 1, "Withdrawal counter is 1");
     });
+  });
 
+  describe('Refund testing', async () => {
     it("should fail to refund if refunding done by different account", async () => {
       try {
         await instance.refundByFunder(account_a, {from: account_b});
@@ -117,9 +140,7 @@ contract('Patronage', function(accounts) {
         return;
       }
     });
-  });
 
-  describe('Refund testing', async () => {
     it("[account a] should refund by funder", async () => {
       await instance.refundByFunder(account_a, {from: account_a});
       const balance = await instance.getBalance.call();
@@ -140,36 +161,6 @@ contract('Patronage', function(accounts) {
     it("should get total funders as 0", async () => {
       const totalFunders = await instance.getCurrentTotalFunders.call();
       assert.equal(totalFunders, 0, "There are 0 total funders");
-    });
-  });
-
-  describe('Simple integration test: New funder, account_c, arrives, withdrawal happens and then refund', async () => {
-    it("[account c] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_c, to: instance.address, value: 100});
-      const balance = await instance.getBalance.call();
-      assert.equal(balance, 100, "Contract has 100 wei balance");
-    });
-
-    it("should get total funders as 1", async () => {
-      const totalFunders = await instance.getCurrentTotalFunders.call();
-      assert.equal(totalFunders, 1, "There are 0 total funders");
-    });
-
-    it("[account c] should have arrived at withdrawal 1", async () => {
-      const withdrawalCounter = await instance.getWithdrawalCounterForFunder.call(account_c);
-      assert.equal(withdrawalCounter, 1, "Arrived at withdrawal 1");
-    });
-
-    it("should withdraw to beneficiary again", async () => {
-      await instance.withdrawToBeneficiary({from: account_a});
-      const balanceAfter = await instance.getBalance.call();
-      assert.equal(balanceAfter, 90, "Beneficiary has withdrawn 10%");
-    });
-
-    it("[account c] should refund by funder", async () => {
-      await instance.refundByFunder(account_c, {from: account_c});
-      const balance = await instance.getBalance.call();
-      assert.equal(balance, 0, "Account B has been refunded 90. Wallet balance is now 0");
     });
   });
 });

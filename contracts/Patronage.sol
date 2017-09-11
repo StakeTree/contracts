@@ -9,15 +9,11 @@ contract Patronage {
   mapping(address => uint256) public funderCounter;
 
   uint totalCurrentFunders = 0;
-  // uint totalWithdrawn = 0;
   uint withdrawalCounter = 0;
-  // uint totalPool = 0;
   address public beneficiary;
-  uint withdrawalPeriod = 20 minutes;
-  uint public lastWithdrawal = 1504722866; // Wed Sep 06 2017 20:34:26 GMT+0200 (SAST)
-  uint public nextWithdrawal = lastWithdrawal + withdrawalPeriod;
-  
-  // uint public totalPool;
+  uint public withdrawalPeriod = 20 minutes;
+  uint public lastWithdrawal;
+  uint public nextWithdrawal;
 
   // modifier onlyBeneficiary {
   //   require(msg.sender == beneficiary);
@@ -27,6 +23,7 @@ contract Patronage {
   event LogFunding(address funderAddress, uint amount);
   event LogAmount(uint amount, string source);
 
+  // Modifiers
   modifier onlyByFunder(address funder) {
     require(msg.sender == funder);
     _;
@@ -48,7 +45,6 @@ contract Patronage {
   }
 
 	function () payable {
-    // totalPool += msg.value;
     if(msg.value > 0){
       uint currentFunderBalance = balanceOf(msg.sender);
 
@@ -68,14 +64,22 @@ contract Patronage {
     }
   }
 
-  function setInitialBeneficiary(address beneficiaryAddress) onlyIfBeneficiaryIsNotSet returns(address) {
+  // Setup functions
+  function setInitialBeneficiary(address beneficiaryAddress) onlyIfBeneficiaryIsNotSet {
     beneficiary = beneficiaryAddress;
   }
-
-  function changeBeneficiary(address beneficiaryAddress) onlyByBeneficiary {
-    beneficiary = beneficiaryAddress;
+  function setInitialNextWithdrawal(uint timestamp) {
+    lastWithdrawal = timestamp; // For tracking purposes
+    nextWithdrawal = lastWithdrawal + withdrawalPeriod; // Fixed period increase
   }
 
+  // Pure functions
+  function calculateWithdrawalAmount(uint startAmount) returns (uint){
+    uint withdrawalAmount = startAmount/100*10;
+    return withdrawalAmount;
+  }
+
+  // Getter functions
   function getBeneficiary() constant returns (address) {
     return beneficiary;
   }
@@ -88,9 +92,20 @@ contract Patronage {
     return withdrawalCounter;
   }
 
-  // function getTotalWithdrawn() constant returns (uint) {
-  //   return totalWithdrawn;
-  // }
+  function getWithdrawalCounterForFunder(address funder) constant returns (uint) {
+    return funderCounter[funder];
+  }
+
+  function getRefundAmountForFunder(address funder) constant returns (uint) {
+    uint amount = funderBalances[funder];
+    uint withdrawalTimes = getHowManyWithdrawalsForFunder(funder);
+
+    for(uint i=0; i<withdrawalTimes; i++) {
+      amount = amount-(amount/100*10);
+    }
+
+    return amount;
+  }
 
   function getBalance() constant returns (uint256 balance) {
     balance = this.balance;
@@ -100,9 +115,14 @@ contract Patronage {
     return funderBalances[funder];
   }
 
-  function calculateWithdrawalAmount(uint startAmount) returns (uint){
-    uint withdrawalAmount = startAmount/100*10;
-    return withdrawalAmount;
+  function getHowManyWithdrawalsForFunder(address funder) constant returns (uint) {
+    return withdrawalCounter - funderCounter[funder];
+  }
+
+  // State changing functions
+  function setNextWithdrawalTime(uint timestamp) {
+    lastWithdrawal = timestamp; // For tracking purposes
+    nextWithdrawal = nextWithdrawal + withdrawalPeriod; // Fixed period increase
   }
 
   // TODO: Set minimum withdrawal amount
@@ -116,27 +136,7 @@ contract Patronage {
     // Keep track of how many withdrawals have taken place
     withdrawalCounter += 1;
 
-    lastWithdrawal = now; // For tracking purposes
-    nextWithdrawal = nextWithdrawal + withdrawalPeriod; // Fixed period increase
-  }
-
-  function getWithdrawalCounterForFunder(address funder) constant returns (uint) {
-    return funderCounter[funder];
-  }
-
-  function getHowManyWithdrawalsForFunder(address funder) constant returns (uint) {
-    return withdrawalCounter - funderCounter[funder];
-  }
-
-  function getRefundAmountForFunder(address funder) constant returns (uint) {
-    uint amount = funderBalances[funder];
-    uint withdrawalTimes = getHowManyWithdrawalsForFunder(funder);
-
-    for(uint i=0; i<withdrawalTimes; i++) {
-      amount = amount-(amount/100*10);
-    }
-    
-    return amount;
+    setNextWithdrawalTime(now);
   }
 
   // Patron refunding from funder
@@ -160,5 +160,14 @@ contract Patronage {
     uint amount = funderBalances[funder];
     newAddress.call.gas(50000).value(amount)();
     funderBalances[funder] -= amount;
+  }
+
+  // Testing functions
+  // private testingMode = false;
+  // modifier onlyForTesting() returns bool {
+  //   return testingMode;
+  // }
+  function changeWithdrawalPeriod(uint period) {
+    withdrawalPeriod = period;
   }
 }
