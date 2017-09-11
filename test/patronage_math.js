@@ -90,7 +90,7 @@ contract('Patronage', function(accounts) {
     it("[account b] should refund funder", async () => {
       await instance.refundByFunder(account_b, {from: account_b});
       const balanceAfter = await instance.getWithdrawalPool.call();
-      assert.equal(balanceAfter, 2, "Pool balance should be 312 wei balance");
+      assert.equal(balanceAfter, 2, "Pool balance should be 2 wei balance");
     });
 
     it("[account a] should add funds to the contract", async () => {
@@ -113,7 +113,26 @@ contract('Patronage', function(accounts) {
 
     it("[account a] should get refund amount", async () => {
       const balance = await instance.getRefundAmountForFunder.call(account_a);
-      assert.equal(balance, 96, "Account A can withdraw 97 wei balance");
+      assert.equal(balance, 96, "Account A can withdraw 96 wei balance");
     });
+
+    it("should withdraw to beneficiary", async () => {
+      await instance.withdrawToBeneficiary();
+      const balanceAfter = await instance.getWithdrawalPool.call();
+      const actualBalance = await instance.getBalance.call();
+      assert.equal(actualBalance, 90, "Beneficiary has withdrawn 10%");
+    });
+
+    it("[account a] should get refund amount", async () => {
+      const balance = await instance.getRefundAmountForFunder.call(account_a);
+      assert.equal(balance, 86, "Account A can withdraw 86 wei balance");
+    });
+
+    it("[account a] should refund funder", async () => {
+      await instance.refundByFunder(account_a, {from: account_a});
+      const balanceAfter = await instance.getWithdrawalPool.call();
+      assert.equal(balanceAfter, 4, "Pool balance should be 3 wei balance");
+    });
+
   });
 });
