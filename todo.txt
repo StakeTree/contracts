@@ -1,0 +1,4 @@
+v1 MVP
+1. Set timestamps properly. Test for this
+2. Prevent withdrawal/refunds when it drops too low.
+2.1 Perhaps create a depleted mechanism? Where rest of funds 
