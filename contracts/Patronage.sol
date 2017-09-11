@@ -15,6 +15,9 @@ contract Patronage {
   uint public withdrawalPeriod = 20 minutes;
   uint public lastWithdrawal;
   uint public nextWithdrawal;
+  uint public withdrawalPool = 0;
+
+  uint public decimalMultiplier = 1000000000;
 
   // modifier onlyBeneficiary {
   //   require(msg.sender == beneficiary);
@@ -47,10 +50,8 @@ contract Patronage {
 
 	function () payable {
     if(msg.value > minimumFundingAmount){
-      uint currentFunderBalance = balanceOf(msg.sender);
-
       // Only increase total funders when they are a new funder
-      if(currentFunderBalance == 0) {
+      if(balanceOf(msg.sender) == 0) {
         totalCurrentFunders += 1;
         // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
         funderCounter[msg.sender] = withdrawalCounter;
@@ -62,6 +63,8 @@ contract Patronage {
         // Reset withdrawal counter
         funderCounter[msg.sender] = withdrawalCounter;
       }
+
+      withdrawalPool += msg.value;
     }
   }
 
@@ -76,7 +79,9 @@ contract Patronage {
 
   // Pure functions
   function calculateWithdrawalAmount(uint startAmount) returns (uint){
-    uint withdrawalAmount = startAmount/100*10;
+    uint bigNumber = startAmount*decimalMultiplier;
+    uint bigWithdrawalAmount = bigNumber/100*10;
+    uint withdrawalAmount = bigWithdrawalAmount/decimalMultiplier;
     return withdrawalAmount;
   }
 
@@ -100,16 +105,21 @@ contract Patronage {
   function getRefundAmountForFunder(address funder) constant returns (uint) {
     uint amount = funderBalances[funder];
     uint withdrawalTimes = getHowManyWithdrawalsForFunder(funder);
-
+    uint bigNumberAmount = amount*decimalMultiplier;
+    
     for(uint i=0; i<withdrawalTimes; i++) {
-      amount = amount-(amount/100*10);
+      bigNumberAmount = bigNumberAmount-(bigNumberAmount/100*10);
     }
 
-    return amount;
+    return bigNumberAmount/decimalMultiplier;
   }
 
   function getBalance() constant returns (uint256 balance) {
     balance = this.balance;
+  }
+
+  function getWithdrawalPool() constant returns (uint256) {
+    return withdrawalPool;
   }
 
   function balanceOf(address funder) constant returns (uint256) {
@@ -128,11 +138,11 @@ contract Patronage {
 
   // TODO: Set minimum withdrawal amount
   function withdrawToBeneficiary() onlyAfterNextWithdrawalDate {
-    uint amount = calculateWithdrawalAmount(this.balance);
+    uint amount = calculateWithdrawalAmount(withdrawalPool);
+
     beneficiary.transfer(amount);
 
-    // Increase amount withdrawn so refunding happens cleanly.
-    // totalWithdrawn += amount;
+    withdrawalPool -= amount;
 
     // Keep track of how many withdrawals have taken place
     withdrawalCounter += 1;
@@ -143,12 +153,13 @@ contract Patronage {
   // Patron refunding from funder
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
-  // TODO: Set minimum withdrawal amount
+  // TODO: set minimum withdrawal amount?
   function refundByFunder(address funder) onlyByFunder(funder) {
     uint amount = getRefundAmountForFunder(funder);
     funder.call.gas(100000).value(amount)();
 
     // Clean up
+    withdrawalPool -= amount;
     totalCurrentFunders -= 1;
     delete funderBalances[funder];
     delete funderCounter[funder];

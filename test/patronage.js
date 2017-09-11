@@ -29,12 +29,6 @@ contract('Patronage', function(accounts) {
       assert.equal(beneficiary, account_a, "Beneficiary address has been set");
     });
 
-    // it("should have correct minimum funding amount", async () => { 
-    //   const min = await instance.minimumFundingAmount.call();
-    //   console.log(min);
-    //   assert.equal(min, 1000000000000000, "Minimum amount is set correctly to 1 finney");
-    // });
-
     it("should have correct minimum funding amount", async () => { 
       const min = await instance.minimumFundingAmount.call();
       assert.equal(min, 1, "Minimum amount is set correctly to 1 wei");
