@@ -157,7 +157,7 @@ contract Patronage {
     delete funderCounter[funder];
 
     // Interaction
-    funder.call.gas(100000).value(amount)();
+    funder.transfer(amount);
   }
 
   // Patron refund from beneficiary
