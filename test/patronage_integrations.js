@@ -47,7 +47,7 @@ contract('Patronage', function(accounts) {
   describe('Simple integration test: New funder, account_c, arrives, withdrawal happens and then refund', async () => {
     it("[account c] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_c, to: instance.address, value: 100});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 100, "Contract has 100 wei balance");
     });
 
@@ -63,13 +63,13 @@ contract('Patronage', function(accounts) {
 
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary({from: account_a});
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 90, "Beneficiary has withdrawn 10%");
     });
 
     it("[account c] should refund by funder", async () => {
       await instance.refundByFunder(account_c, {from: account_c});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Account B has been refunded 90. Wallet balance is now 0");
     });
   });
@@ -77,7 +77,7 @@ contract('Patronage', function(accounts) {
   describe('Complex integration test 1: one funder -> two withdrawals -> funder tops up -> three withdrawals -> funder refunds', async () => {
     it("[account d] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_d, to: instance.address, value: 10000});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 10000, "Contract has 100 wei balance");
     });
 
@@ -91,7 +91,7 @@ contract('Patronage', function(accounts) {
     // x2
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary();
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 9000, "Beneficiary has withdrawn 10%");
     });
     it("[account d] should have correct withdrawal amount", async () => {
@@ -100,7 +100,7 @@ contract('Patronage', function(accounts) {
     });
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary();
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 8100, "Beneficiary has withdrawn 10%");
     });
     it("[account d] should have correct withdrawal amount", async () => {
@@ -111,7 +111,7 @@ contract('Patronage', function(accounts) {
     // Topup
     it("[account d] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_d, to: instance.address, value: 11900});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 20000, "Contract has 20000 wei balance");
     });
     it("[account d] should have correct withdrawal amount", async () => {
@@ -122,7 +122,7 @@ contract('Patronage', function(accounts) {
     // x3
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary();
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 18000, "Beneficiary has withdrawn 10%");
     });
     it("[account d] should have correct withdrawal amount", async () => {
@@ -131,7 +131,7 @@ contract('Patronage', function(accounts) {
     });
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary();
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 16200, "Beneficiary has withdrawn 10%");
     });
     it("[account d] should have correct withdrawal amount", async () => {
@@ -140,7 +140,7 @@ contract('Patronage', function(accounts) {
     });
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary();
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 14580, "Beneficiary has withdrawn 10%");
     });
     it("[account d] should have correct withdrawal amount", async () => {
@@ -150,7 +150,7 @@ contract('Patronage', function(accounts) {
 
     it("[account d] should refund their funds", async () => {
       await instance.refundByFunder(account_d, {from: account_d});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Account D has been refunded 14580. Wallet balance is now 0");
     });
 
@@ -159,17 +159,17 @@ contract('Patronage', function(accounts) {
     // Three funders arrive
     it("[account d] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_d, to: instance.address, value: 100});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 100, "Contract has 100 wei balance");
     });
     it("[account e] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_e, to: instance.address, value: 200});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 300, "Contract has 300 wei balance");
     });
     it("[account f] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_f, to: instance.address, value: 300});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 600, "Contract has 600 wei balance");
     });
 
@@ -181,7 +181,7 @@ contract('Patronage', function(accounts) {
     // One tops up
     it("[account e] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_e, to: instance.address, value: 800});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 1400, "Contract has 1100 wei balance");
     });
 
@@ -199,7 +199,7 @@ contract('Patronage', function(accounts) {
     // Withdraw
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary();
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 1260, "Beneficiary has withdrawn 10%");
     });
 
@@ -225,13 +225,13 @@ contract('Patronage', function(accounts) {
     // D 90 -> 0
     it("[account d] should refund their funds", async () => {
       await instance.refundByFunder(account_d, {from: account_d});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 1170, "Account D has been refunded 90. Wallet balance is now 1170");
     });
 
     it("[account d] should refund their funds again [does nothing]", async () => {
       await instance.refundByFunder(account_d, {from: account_d});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 1170, "Nothing happened. Goooood.");
     });
 
@@ -239,7 +239,7 @@ contract('Patronage', function(accounts) {
     // F 270 -> 600
     it("[account f] should add funds to the contract again", async () => {
       await web3.eth.sendTransaction({gas: 1000000, from: account_f, to: instance.address, value: 330});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 1500, "Contract has 1500 wei balance");
     });
 
@@ -251,7 +251,7 @@ contract('Patronage', function(accounts) {
     // Withdraw
     it("should withdraw to beneficiary", async () => {
       await instance.withdrawToBeneficiary();
-      const balanceAfter = await instance.getWithdrawalPool.call();
+      const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 1350, "Beneficiary has withdrawn 10%");
     });
 
@@ -276,7 +276,7 @@ contract('Patronage', function(accounts) {
     // 1350 -> 540
     it("[account e] should refund their funds", async () => {
       await instance.refundByFunder(account_e, {from: account_e});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 540, "Account E has been refunded 810. Wallet balance is now 540");
     });
 
@@ -284,7 +284,7 @@ contract('Patronage', function(accounts) {
     it("[account f] should refund their funds", async () => {
       const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
       await instance.refundByFunder(account_f, {from: account_f});
-      const balance = await instance.getWithdrawalPool.call();
+      const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Account F has been refunded 540. Wallet balance is now 0");
     });
 

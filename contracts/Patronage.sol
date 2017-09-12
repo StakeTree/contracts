@@ -15,7 +15,6 @@ contract Patronage {
   uint public withdrawalPeriod = 20 minutes;
   uint public lastWithdrawal;
   uint public nextWithdrawal;
-  uint public withdrawalPool = 0;
 
   uint public decimalMultiplier = 1000000000;
 
@@ -63,8 +62,6 @@ contract Patronage {
         // Reset withdrawal counter
         funderCounter[msg.sender] = withdrawalCounter;
       }
-
-      withdrawalPool += msg.value;
     }
   }
 
@@ -118,10 +115,6 @@ contract Patronage {
     balance = this.balance;
   }
 
-  function getWithdrawalPool() constant returns (uint256) {
-    return withdrawalPool;
-  }
-
   function balanceOf(address funder) constant returns (uint256) {
     return funderBalances[funder];
   }
@@ -139,9 +132,7 @@ contract Patronage {
   // TODO: Set minimum withdrawal amount
   // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
   function withdrawToBeneficiary() onlyAfterNextWithdrawalDate {
-    uint amount = calculateWithdrawalAmount(withdrawalPool);
-
-    withdrawalPool -= amount;
+    uint amount = calculateWithdrawalAmount(this.balance);
 
     // Keep track of how many withdrawals have taken place
     withdrawalCounter += 1;
@@ -161,7 +152,6 @@ contract Patronage {
     uint amount = getRefundAmountForFunder(funder);
 
     // Effects
-    withdrawalPool -= amount;
     totalCurrentFunders -= 1;
     delete funderBalances[funder];
     delete funderCounter[funder];
