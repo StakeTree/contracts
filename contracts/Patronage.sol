@@ -47,6 +47,11 @@ contract Patronage {
     _;
   }
 
+  modifier onlyBeforeSetup() {
+    require(nextWithdrawal == 0);
+    _;
+  }
+
 	function () payable onlyAfterSetup {
     if(msg.value > minimumFundingAmount){
       // Only increase total funders when they are a new funder
@@ -175,7 +180,7 @@ contract Patronage {
   // modifier onlyForTesting() returns bool {
   //   return testingMode;
   // }
-  function changeWithdrawalPeriod(uint period) {
+  function changeWithdrawalPeriod(uint period) onlyBeforeSetup {
     withdrawalPeriod = period;
   }
 }
