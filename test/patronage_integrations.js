@@ -32,11 +32,11 @@ contract('Patronage', function(accounts) {
     });
 
     it("should set initial next withdrawal period in correct timeframe", async () => {
-      const withdrawalPeriod = await instance.withdrawalPeriod.call();
-      const now = new Date().getTime()/1000;
-      const nowUnix = parseInt(now.toFixed(0), 10)-withdrawalPeriod;
-      await instance.setInitialNextWithdrawal(nowUnix);
+      const nowUnix = new Date().getTime()/1000;
+      const nowParsed = parseInt(nowUnix.toFixed(0), 10);
+      await instance.setInitialNextWithdrawal(nowParsed);
 
+      const withdrawalPeriod = await instance.withdrawalPeriod.call();
       const nextWithdrawal = await instance.nextWithdrawal.call();
       const lastWithdrawal = await instance.lastWithdrawal.call();
       const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];

@@ -1,6 +1,7 @@
 var Patronage = artifacts.require("./Patronage.sol");
 
 const ERROR_INVALID_OPCODE = 'VM Exception while processing transaction: invalid opcode';
+const ERROR_SETNEXTWITHDRAWAL_PRIVATE = 'instance.setNextWithdrawalTime is not a function';
 
 contract('Patronage', function(accounts) {
   let instance;
@@ -39,6 +40,24 @@ contract('Patronage', function(accounts) {
         await instance.setInitialBeneficiary(account_a);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
+        return;
+      }
+    });
+
+    it("should fail adding funds before setup complete", async () => {
+      try {
+        await web3.eth.sendTransaction({from: account_a, to: instance.address, value: 1000});
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+        return;
+      }
+    });
+
+    it("should fail calling setNextWithdrawal", async () => {
+      try {
+        await instance.setNextWithdrawalTime(12345678);
+      } catch (err) {
+        assert.equal(err.message, ERROR_SETNEXTWITHDRAWAL_PRIVATE);
         return;
       }
     });

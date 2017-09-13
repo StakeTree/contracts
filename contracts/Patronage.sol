@@ -13,8 +13,8 @@ contract Patronage {
   address public beneficiary;
   uint public minimumFundingAmount = 1 wei; // Prevent spam & support meaningful contributions for now
   uint public withdrawalPeriod = 20 minutes;
-  uint public lastWithdrawal;
-  uint public nextWithdrawal;
+  uint public lastWithdrawal = 0;
+  uint public nextWithdrawal = 0;
 
   uint public decimalMultiplier = 1000000000;
 
@@ -47,7 +47,12 @@ contract Patronage {
     _;
   }
 
-	function () payable {
+  modifier onlyAfterSetup() {
+    require(nextWithdrawal != 0);
+    _;
+  }
+
+	function () payable onlyAfterSetup {
     if(msg.value > minimumFundingAmount){
       // Only increase total funders when they are a new funder
       if(balanceOf(msg.sender) == 0) {
@@ -124,14 +129,14 @@ contract Patronage {
   }
 
   // State changing functions
-  function setNextWithdrawalTime(uint timestamp) {
+  function setNextWithdrawalTime(uint timestamp) private {
     lastWithdrawal = timestamp; // For tracking purposes
     nextWithdrawal = nextWithdrawal + withdrawalPeriod; // Fixed period increase
   }
 
   // TODO: Set minimum withdrawal amount
   // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
-  function withdrawToBeneficiary() onlyAfterNextWithdrawalDate {
+  function withdrawToBeneficiary() onlyAfterSetup onlyAfterNextWithdrawalDate {
     uint amount = calculateWithdrawalAmount(this.balance);
 
     // Keep track of how many withdrawals have taken place
@@ -147,7 +152,7 @@ contract Patronage {
   // Can only be sent back to the same address it was funded with
   // TODO: set minimum withdrawal amount?
   // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
-  function refundByFunder(address funder) onlyByFunder(funder) {
+  function refundByFunder(address funder) onlyAfterSetup onlyByFunder(funder) {
     // Check
     uint amount = getRefundAmountForFunder(funder);
 

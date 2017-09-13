@@ -30,6 +30,18 @@ contract('Patronage', function(accounts) {
       assert.equal(withdrawalPeriod, 0, "Withdrawal period set to zero for integration testing");
     });
 
+    it("should set initial next withdrawal period in correct timeframe", async () => {
+      const nowUnix = new Date().getTime()/1000;
+      const nowParsed = parseInt(nowUnix.toFixed(0), 10);
+      await instance.setInitialNextWithdrawal(nowParsed);
+
+      const withdrawalPeriod = await instance.withdrawalPeriod.call();
+      const nextWithdrawal = await instance.nextWithdrawal.call();
+      const lastWithdrawal = await instance.lastWithdrawal.call();
+      const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];
+      assert.equal(timingIsCorrect, true, "Contract withdrawal timing is correctly setup");
+    });
+
     it("should get initial balance of contract", async () => {
       const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Contract initiated with 0 balance");
