@@ -18,11 +18,6 @@ contract Patronage {
 
   uint public decimalMultiplier = 1000000000;
 
-  // modifier onlyBeneficiary {
-  //   require(msg.sender == beneficiary);
-  //   _;
-  // }
-
   event LogFunding(address funderAddress, uint amount);
   event LogAmount(uint amount, string source);
 
