@@ -2,7 +2,6 @@ var Patronage = artifacts.require("./Patronage.sol");
 
 const ERROR_INVALID_OPCODE = 'VM Exception while processing transaction: invalid opcode';
 const ERROR_SETNEXTWITHDRAWAL_PRIVATE = 'instance.setNextWithdrawalTime is not a function';
-const ERROR_CHANGEWITHDRAWALPERIOD_PRIVATE = 'instance.changeWithdrawalPeriod is not a function';
 
 contract('Patronage', function(accounts) {
   let instance;
@@ -58,15 +57,6 @@ contract('Patronage', function(accounts) {
       }
     });
 
-    it("should fail calling changeWithdrawalPeriod", async () => {
-      try {
-        await instance.changeWithdrawalPeriod(12345678);
-      } catch (err) {
-        assert.equal(err.message, ERROR_SETNEXTWITHDRAWAL_PRIVATE);
-        return;
-      }
-    });
-
     // Back in time for testing purposes
     it("should set initial next withdrawal period in correct timeframe", async () => {
       const withdrawalPeriod = await instance.withdrawalPeriod.call();
@@ -78,6 +68,15 @@ contract('Patronage', function(accounts) {
       const lastWithdrawal = await instance.lastWithdrawal.call();
       const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];
       assert.equal(timingIsCorrect, true, "Contract withdrawal timing is correctly setup");
+    });
+
+    it("should fail calling changeWithdrawalPeriod", async () => {
+      try {
+        await instance.changeWithdrawalPeriod(12345678);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+        return;
+      }
     });
 
     it("should get initial balance of contract", async () => {

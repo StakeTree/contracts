@@ -42,6 +42,15 @@ contract('Patronage', function(accounts) {
       const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];
       assert.equal(timingIsCorrect, true, "Contract withdrawal timing is correctly setup");
     });
+
+    it("should fail calling changeWithdrawalPeriod", async () => {
+      try {
+        await instance.changeWithdrawalPeriod(12345678);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+        return;
+      }
+    });
   });
 
   describe('Simple integration test: New funder, account_c, arrives, withdrawal happens and then refund', async () => {
