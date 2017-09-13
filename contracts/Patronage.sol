@@ -176,10 +176,6 @@ contract Patronage {
   // }
 
   // Testing functions
-  // private testingMode = false;
-  // modifier onlyForTesting() returns bool {
-  //   return testingMode;
-  // }
   function changeWithdrawalPeriod(uint period) onlyBeforeSetup {
     withdrawalPeriod = period;
   }
