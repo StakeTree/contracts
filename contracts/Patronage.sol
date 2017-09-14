@@ -15,6 +15,7 @@ contract Patronage {
   uint public withdrawalPeriod = 20 minutes;
   uint public lastWithdrawal = 0;
   uint public nextWithdrawal = 0;
+  bool setupComplete = false;
 
   uint public decimalMultiplier = 1000000000;
 
@@ -42,13 +43,13 @@ contract Patronage {
     _;
   }
 
-  modifier onlyAfterSetup() {
-    require(nextWithdrawal != 0);
+  modifier onlyBeforeSetup() {
+    require(setupComplete == false);
     _;
   }
 
-  modifier onlyBeforeSetup() {
-    require(nextWithdrawal == 0);
+  modifier onlyAfterSetup() {
+    require(setupComplete == true);
     _;
   }
 
@@ -77,6 +78,7 @@ contract Patronage {
   function setInitialNextWithdrawal(uint timestamp) {
     lastWithdrawal = timestamp; // For tracking purposes
     nextWithdrawal = lastWithdrawal + withdrawalPeriod; // Fixed period increase
+    setupComplete = true;
   }
 
   // Pure functions
