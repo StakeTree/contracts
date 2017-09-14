@@ -1,10 +1,6 @@
 pragma solidity ^0.4.11;
 
-// Questions/thoughts
-// Balance vs Pool?
-// Rolling withdrawal periods vs fixed withdrawal periods (set ahead like 5 times)
-
-contract Patronage {
+contract StakeTree_MVP {
   mapping(address => uint256) public funderBalances;
   mapping(address => uint256) public funderCounter;
 

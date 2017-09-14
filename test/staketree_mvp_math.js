@@ -1,8 +1,8 @@
-var Patronage = artifacts.require("./Patronage.sol");
+var StakeTree_MVP = artifacts.require("./StakeTree_MVP.sol");
 
 const ERROR_INVALID_OPCODE = 'VM Exception while processing transaction: invalid opcode';
 
-contract('Patronage', function(accounts) {
+contract('StakeTree_MVP', function(accounts) {
   let instance;
 
   const account_a = accounts[0]; // Beneficiary
@@ -14,7 +14,7 @@ contract('Patronage', function(accounts) {
   const account_f = accounts[5];
 
   beforeEach(async () => {
-    instance = await Patronage.deployed();
+    instance = await StakeTree_MVP.deployed();
   });
 
   describe('Init & unit tests of decimal math', async () => {
