@@ -42,13 +42,7 @@ contract StakeTreeMVP {
     _;
   }
 
-  modifier onlyIfBeneficiaryIsNotSet() {
-    require(beneficiary == address(0));
-    _;
-  }
-
   function () payable {
-    LogAmount(msg.value, "payyy");
     if(msg.value > minimumFundingAmount){
       // Only increase total funders when they are a new funder
       if(balanceOf(msg.sender) == 0) {
