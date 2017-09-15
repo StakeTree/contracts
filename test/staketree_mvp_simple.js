@@ -19,8 +19,7 @@ contract('StakeTree_MVP', function(accounts) {
   });
 
   describe('Init & unit tests of pure functions', async () => {
-    it("should set beneficiary address", async () => {
-      await instance.setInitialBeneficiary(account_a);
+    it("should have set beneficiary address during deploy", async () => {
       const beneficiary = await instance.getBeneficiary.call();
       assert.equal(beneficiary, account_a, "Beneficiary address has been set");
     });

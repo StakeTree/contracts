@@ -18,6 +18,10 @@ contract StakeTree_MVP {
   event LogFunding(address funderAddress, uint amount);
   event LogAmount(uint amount, string source);
 
+  function StakeTree_MVP(address beneficiaryAddress) {
+    beneficiary = beneficiaryAddress;
+  }
+
   // Modifiers
   modifier onlyByFunder(address funder) {
     require(msg.sender == funder);
@@ -49,7 +53,7 @@ contract StakeTree_MVP {
     _;
   }
 
-	function () payable onlyAfterSetup {
+  function () payable onlyAfterSetup {
     if(msg.value > minimumFundingAmount){
       // Only increase total funders when they are a new funder
       if(balanceOf(msg.sender) == 0) {
