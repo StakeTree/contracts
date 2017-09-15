@@ -1,9 +1,9 @@
-var StakeTree_MVP = artifacts.require("./StakeTree_MVP.sol");
+var StakeTreeMVP = artifacts.require("./StakeTreeMVP.sol");
 
 const ERROR_INVALID_OPCODE = 'VM Exception while processing transaction: invalid opcode';
 const ERROR_SETNEXTWITHDRAWAL_PRIVATE = 'instance.setNextWithdrawalTime is not a function';
 
-contract('StakeTree_MVP', function(accounts) {
+contract('StakeTreeMVP', function(accounts) {
   let instance;
 
   const account_a = accounts[0]; // Beneficiary
@@ -14,14 +14,31 @@ contract('StakeTree_MVP', function(accounts) {
   const account_e = accounts[4];
   const account_f = accounts[5];
 
+  const nowUnix = new Date().getTime()/1000 - 3000;
+  const nowParsed = parseInt(nowUnix.toFixed(0), 10);
+
+  let deployed = false;
+
+  const config = {
+    beneficiaryAddress: account_a,
+    withdrawalPeriod: 3000,
+    startTime: nowParsed
+  };
+
   beforeEach(async () => {
-    instance = await StakeTree_MVP.new(account_a, {from: account_a});
+    if(!deployed) {
+      instance = await StakeTreeMVP.new(
+        config.beneficiaryAddress, 
+        config.withdrawalPeriod, 
+        config.startTime, 
+      {from: account_a});
+      deployed = true;
+    }
   });
 
   describe('Init & unit tests of pure functions', async () => {
     it("should have set beneficiary address during deploy", async () => {
-      const beneficiary = await instance.beneficiary.call();
-      console.log(beneficiary, account_a);
+      const beneficiary = await instance.getBeneficiary.call();
       assert.equal(beneficiary, account_a, "Beneficiary address has been set");
     });
 
@@ -30,53 +47,17 @@ contract('StakeTree_MVP', function(accounts) {
       assert.equal(min, 1, "Minimum amount is set correctly to 1 wei");
     });
 
-    it("should fail setting beneficiary address again", async () => {
-      try {
-        await instance.setInitialBeneficiary(account_a);
-      } catch (err) {
-        assert.equal(err.message, ERROR_INVALID_OPCODE);
-        return;
-      }
-    });
-
-    it("should fail adding funds before setup complete", async () => {
-      try {
-        await web3.eth.sendTransaction({from: account_a, to: instance.address, value: 1000});
-      } catch (err) {
-        assert.equal(err.message, ERROR_INVALID_OPCODE);
-        return;
-      }
-    });
-
-    it("should fail calling setNextWithdrawal", async () => {
-      try {
-        await instance.setNextWithdrawalTime(12345678);
-      } catch (err) {
-        assert.equal(err.message, ERROR_SETNEXTWITHDRAWAL_PRIVATE);
-        return;
-      }
-    });
-
-    // Back in time for testing purposes
-    it("should set initial next withdrawal period in correct timeframe", async () => {
+    it("should have set withdrawal timeframe correctly", async () => {
       const withdrawalPeriod = await instance.withdrawalPeriod.call();
-      const nowUnix = new Date().getTime()/1000;
-      const reverseTime = parseInt(nowUnix.toFixed(0), 10)-withdrawalPeriod-10;
-      await instance.setInitialNextWithdrawal(reverseTime);
+      assert.equal(withdrawalPeriod, config.withdrawalPeriod, "Withdrawal period correctly");
+    });
 
+    it("should have initial next withdrawal period in correct timeframe", async () => {
+      const withdrawalPeriod = await instance.withdrawalPeriod.call();
       const nextWithdrawal = await instance.nextWithdrawal.call();
       const lastWithdrawal = await instance.lastWithdrawal.call();
       const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];
       assert.equal(timingIsCorrect, true, "Contract withdrawal timing is correctly setup");
-    });
-
-    it("should fail calling changeWithdrawalPeriod", async () => {
-      try {
-        await instance.changeWithdrawalPeriod(12345678);
-      } catch (err) {
-        assert.equal(err.message, ERROR_INVALID_OPCODE);
-        return;
-      }
     });
 
     it("should get initial balance of contract", async () => {
@@ -152,6 +133,7 @@ contract('StakeTree_MVP', function(accounts) {
     it("should fail withdrawing to beneficiary", async () => {
       try {
         await instance.withdrawToBeneficiary();
+        assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
       }
@@ -167,9 +149,9 @@ contract('StakeTree_MVP', function(accounts) {
     it("should fail to refund if refunding done by different account", async () => {
       try {
         await instance.refundByFunder(account_a, {from: account_b});
+        assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
-        return;
       }
     });
 

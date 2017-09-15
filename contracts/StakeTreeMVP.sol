@@ -1,25 +1,29 @@
 pragma solidity ^0.4.11;
 
-contract StakeTree_MVP {
+contract StakeTreeMVP {
   mapping(address => uint256) public funderBalances;
   mapping(address => uint256) public funderCounter;
 
   uint totalCurrentFunders = 0;
   uint withdrawalCounter = 0;
-  address public beneficiary;
   uint public minimumFundingAmount = 1 wei; // Prevent spam & support meaningful contributions for now
-  uint public withdrawalPeriod = 20 minutes;
-  uint public lastWithdrawal = 0;
-  uint public nextWithdrawal = 0;
-  bool setupComplete = false;
+  
+  address public beneficiary;
+  uint public withdrawalPeriod;
+  uint public lastWithdrawal;
+  uint public nextWithdrawal;
 
   uint public decimalMultiplier = 1000000000;
 
   event LogFunding(address funderAddress, uint amount);
   event LogAmount(uint amount, string source);
 
-  function StakeTree_MVP(address beneficiaryAddress) {
+  function StakeTreeMVP(address beneficiaryAddress, uint withdrawalPeriodInit, uint withdrawalStart) {
     beneficiary = beneficiaryAddress;
+    withdrawalPeriod = withdrawalPeriodInit;
+
+    lastWithdrawal = withdrawalStart; // For tracking purposes
+    nextWithdrawal = lastWithdrawal + withdrawalPeriod; // Fixed period increase
   }
 
   // Modifiers
@@ -43,17 +47,8 @@ contract StakeTree_MVP {
     _;
   }
 
-  modifier onlyBeforeSetup() {
-    require(setupComplete == false);
-    _;
-  }
-
-  modifier onlyAfterSetup() {
-    require(setupComplete == true);
-    _;
-  }
-
-  function () payable onlyAfterSetup {
+  function () payable {
+    LogAmount(msg.value, "payyy");
     if(msg.value > minimumFundingAmount){
       // Only increase total funders when they are a new funder
       if(balanceOf(msg.sender) == 0) {
@@ -69,16 +64,6 @@ contract StakeTree_MVP {
         funderCounter[msg.sender] = withdrawalCounter;
       }
     }
-  }
-
-  // Setup functions
-  function setInitialBeneficiary(address beneficiaryAddress) onlyIfBeneficiaryIsNotSet {
-    beneficiary = beneficiaryAddress;
-  }
-  function setInitialNextWithdrawal(uint timestamp) {
-    lastWithdrawal = timestamp; // For tracking purposes
-    nextWithdrawal = lastWithdrawal + withdrawalPeriod; // Fixed period increase
-    setupComplete = true;
   }
 
   // Pure functions
@@ -138,15 +123,16 @@ contract StakeTree_MVP {
 
   // TODO: Set minimum withdrawal amount
   // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
-  function withdrawToBeneficiary() onlyAfterSetup onlyAfterNextWithdrawalDate {
+  function withdrawToBeneficiary() onlyAfterNextWithdrawalDate {
+    // Check
     uint amount = calculateWithdrawalAmount(this.balance);
 
-    // Keep track of how many withdrawals have taken place
+    // Effects
     withdrawalCounter += 1;
-
     setNextWithdrawalTime(now);
 
-    beneficiary.transfer(amount); 
+    // Interaction
+    beneficiary.transfer(amount);
   }
 
   // Patron refunding from funder
@@ -154,7 +140,7 @@ contract StakeTree_MVP {
   // Can only be sent back to the same address it was funded with
   // TODO: set minimum withdrawal amount?
   // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
-  function refundByFunder(address funder) onlyAfterSetup onlyByFunder(funder) {
+  function refundByFunder(address funder) onlyByFunder(funder) {
     // Check
     uint amount = getRefundAmountForFunder(funder);
 
@@ -176,9 +162,4 @@ contract StakeTree_MVP {
   //   newAddress.call.gas(50000).value(amount)();
   //   funderBalances[funder] -= amount;
   // }
-
-  // Testing functions
-  function changeWithdrawalPeriod(uint period) onlyBeforeSetup {
-    withdrawalPeriod = period;
-  }
 }

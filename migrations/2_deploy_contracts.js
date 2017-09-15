@@ -1,5 +1,5 @@
-var StakeTree_MVP = artifacts.require("./StakeTree_MVP.sol");
+var StakeTreeMVP = artifacts.require("./StakeTreeMVP.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(StakeTree_MVP);
+  deployer.deploy(StakeTreeMVP);
 };
