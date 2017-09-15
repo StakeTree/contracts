@@ -15,12 +15,13 @@ contract('StakeTree_MVP', function(accounts) {
   const account_f = accounts[5];
 
   beforeEach(async () => {
-    instance = await StakeTree_MVP.deployed();
+    instance = await StakeTree_MVP.new(account_a, {from: account_a});
   });
 
   describe('Init & unit tests of pure functions', async () => {
     it("should have set beneficiary address during deploy", async () => {
-      const beneficiary = await instance.getBeneficiary.call();
+      const beneficiary = await instance.beneficiary.call();
+      console.log(beneficiary, account_a);
       assert.equal(beneficiary, account_a, "Beneficiary address has been set");
     });
 
