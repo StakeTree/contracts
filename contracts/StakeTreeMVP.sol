@@ -4,11 +4,13 @@ contract StakeTreeMVP {
   mapping(address => uint256) public funderBalances;
   mapping(address => uint256) public funderCounter;
 
+  bool public live = true;
   uint totalCurrentFunders = 0;
   uint withdrawalCounter = 0;
   uint public minimumFundingAmount = 1 wei; // Prevent spam & support meaningful contributions for now
   
   address public beneficiary;
+  uint public sunsetWithdrawalPeriod;
   uint public withdrawalPeriod;
   uint public lastWithdrawal;
   uint public nextWithdrawal;
@@ -18,9 +20,15 @@ contract StakeTreeMVP {
   event LogFunding(address funderAddress, uint amount);
   event LogAmount(uint amount, string source);
 
-  function StakeTreeMVP(address beneficiaryAddress, uint withdrawalPeriodInit, uint withdrawalStart) {
+  function StakeTreeMVP(
+    address beneficiaryAddress, 
+    uint withdrawalPeriodInit, 
+    uint withdrawalStart, 
+    uint sunsetWithdrawPeriodInit) {
+
     beneficiary = beneficiaryAddress;
     withdrawalPeriod = withdrawalPeriodInit;
+    sunsetWithdrawalPeriod = sunsetWithdrawPeriodInit;
 
     lastWithdrawal = withdrawalStart; // For tracking purposes
     nextWithdrawal = lastWithdrawal + withdrawalPeriod; // Fixed period increase
@@ -42,7 +50,17 @@ contract StakeTreeMVP {
     _;
   }
 
-  function () payable {
+  modifier onlyWhenLive() {
+    require(live);
+    _;
+  }
+
+  modifier onlyWhenSunset() {
+    require(!live);
+    _;
+  }
+
+  function () payable onlyWhenLive {
     if(msg.value > minimumFundingAmount){
       // Only increase total funders when they are a new funder
       if(balanceOf(msg.sender) == 0) {
@@ -117,7 +135,7 @@ contract StakeTreeMVP {
 
   // TODO: Set minimum withdrawal amount
   // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
-  function withdrawToBeneficiary() onlyAfterNextWithdrawalDate {
+  function withdrawToBeneficiary() onlyAfterNextWithdrawalDate onlyWhenLive {
     // Check
     uint amount = calculateWithdrawalAmount(this.balance);
 
@@ -156,4 +174,15 @@ contract StakeTreeMVP {
   //   newAddress.call.gas(50000).value(amount)();
   //   funderBalances[funder] -= amount;
   // }
+
+  function sunset() onlyByBeneficiary {
+    live = false;
+  }
+
+  function swipe(address recipient) onlyWhenSunset onlyByBeneficiary {
+    uint sunsetWithdrawDate = lastWithdrawal + sunsetWithdrawalPeriod;
+    require(now > sunsetWithdrawDate);
+
+    recipient.transfer(this.balance);
+  }
 }

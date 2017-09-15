@@ -5,6 +5,7 @@ const ERROR_SETNEXTWITHDRAWAL_PRIVATE = 'instance.setNextWithdrawalTime is not a
 
 contract('StakeTreeMVP', function(accounts) {
   let instance;
+  let instance2;
 
   const account_a = accounts[0]; // Beneficiary
   const account_b = accounts[1];
@@ -22,7 +23,8 @@ contract('StakeTreeMVP', function(accounts) {
   const config = {
     beneficiaryAddress: account_a,
     withdrawalPeriod: 3000,
-    startTime: nowParsed
+    startTime: nowParsed,
+    sunsetWithdrawalPeriod: 5184000 // 2 months
   };
 
   beforeEach(async () => {
@@ -30,7 +32,15 @@ contract('StakeTreeMVP', function(accounts) {
       instance = await StakeTreeMVP.new(
         config.beneficiaryAddress, 
         config.withdrawalPeriod, 
-        config.startTime, 
+        config.startTime,
+        config.sunsetWithdrawalPeriod,  
+      {from: account_a});
+
+      instance2 = await StakeTreeMVP.new(
+        config.beneficiaryAddress, 
+        0,
+        config.startTime,
+        0,  
       {from: account_a});
       deployed = true;
     }
@@ -58,6 +68,11 @@ contract('StakeTreeMVP', function(accounts) {
       const lastWithdrawal = await instance.lastWithdrawal.call();
       const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];
       assert.equal(timingIsCorrect, true, "Contract withdrawal timing is correctly setup");
+    });
+
+    it("should be in live mode", async () => {
+      const isLive = await instance.live.call();
+      assert.equal(isLive, true, "Contract is in live mode");
     });
 
     it("should get initial balance of contract", async () => {
@@ -176,5 +191,86 @@ contract('StakeTreeMVP', function(accounts) {
       const totalFunders = await instance.getCurrentTotalFunders.call();
       assert.equal(totalFunders, 0, "There are 0 total funders");
     });
+  });
+
+  describe('Sunset testing', async () => {
+    // Instance 1
+    it("[instance 1] should fail swiping because not in sunset mode", async () => {
+      try {
+        await instance.swipe(account_a, {from: account_a})
+        assert.equal(true, false);
+      } catch(err){
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[instance 1] should put contract into sunset mode", async () => {
+      await instance.sunset({from: account_a});
+      const isLive = await instance.live.call();
+      assert.equal(isLive, false, "Contract has been put in sunset mode");
+    });
+
+    it("[instance 1] should fail swiping", async () => {
+      try {
+        await instance.swipe(account_a, {from: account_a});
+      } catch(err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[instance 1] should fail withdrawing by beneficiary", async () => {
+      try {
+        await instance.withdrawToBeneficiary();
+        assert.equal(true, false);
+      } catch(err){
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[instance 2] should add funds to the contract", async () => {
+      await web3.eth.sendTransaction({from: account_a, to: instance2.address, value: 1000});
+      const balance = await instance2.getBalance.call();
+      assert.equal(balance, 1000, "Contract has 1000 wei balance");
+    });
+
+    it("[instance 2] should put contract into sunset mode", async () => {
+      await instance2.sunset({from: account_a});
+      const isLive = await instance2.live.call();
+      assert.equal(isLive, false, "Contract has been put in sunset mode");
+    });
+
+    it("[instance 2] should fail adding funds to the contract after sunset", async () => {
+      try {
+        await web3.eth.sendTransaction({from: account_a, to: instance2.address, value: 1000});
+        assert.equal(true, false);
+      } catch(err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }      
+    });
+
+    it("[instance 2] should fail withdrawing by beneficiary", async () => {
+      try {
+        await instance2.withdrawToBeneficiary();
+        assert.equal(true, false);
+      } catch(err){
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[instance 2] should fail swiping contract from non-beneficiary", async () => {
+      try {
+        await instance2.swipe(account_a, {from: account_b});
+        assert.equal(true, false);
+      } catch(err){
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[instance 2] should swipe contract", async () => {
+      await instance2.swipe(account_a, {from: account_a});
+      const balance = await instance2.getBalance.call();
+      assert.equal(balance, 0, "Contract has been swiped by beneficiary");
+    });
+
   });
 });
