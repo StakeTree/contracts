@@ -1,8 +1,8 @@
-var StakeTree_MVP = artifacts.require("./StakeTree_MVP.sol");
+var StakeTreeMVP = artifacts.require("./StakeTreeMVP.sol");
 
 const ERROR_INVALID_OPCODE = 'VM Exception while processing transaction: invalid opcode';
 
-contract('StakeTree_MVP', function(accounts) {
+contract('StakeTreeMVP', function(accounts) {
   let instance;
 
   const account_a = accounts[0]; // Beneficiary
@@ -13,43 +13,40 @@ contract('StakeTree_MVP', function(accounts) {
   const account_e = accounts[4];
   const account_f = accounts[5];
 
+  const nowUnix = new Date().getTime()/1000;
+  const nowParsed = parseInt(nowUnix.toFixed(0), 10);
+
+  let deployed = false;
+
+  const config = {
+    beneficiaryAddress: account_a,
+    withdrawalPeriod: 0,
+    startTime: nowParsed
+  };
 
   beforeEach(async () => {
-    instance = await StakeTree_MVP.deployed();
+    if(!deployed) {
+      instance = await StakeTreeMVP.new(
+        config.beneficiaryAddress, 
+        config.withdrawalPeriod, 
+        config.startTime, 
+      {from: account_a});
+      deployed = true;
+    }
   });
 
   describe('Init & unit tests of pure functions', async () => {
-    it("should set beneficiary address", async () => {
-      await instance.setInitialBeneficiary(account_a);
+    it("should have set beneficiary address during deploy", async () => {
       const beneficiary = await instance.getBeneficiary.call();
       assert.equal(beneficiary, account_a, "Beneficiary address has been set");
     });
 
-    it("should set withdrawal timeframe to 0 for testing", async () => {
-      await instance.changeWithdrawalPeriod(0);
-      const withdrawalPeriod = await instance.withdrawalPeriod.call();
-      assert.equal(withdrawalPeriod, 0, "Withdrawal period set to zero for integration testing");
-    });
-
-    it("should set initial next withdrawal period in correct timeframe", async () => {
-      const nowUnix = new Date().getTime()/1000;
-      const nowParsed = parseInt(nowUnix.toFixed(0), 10);
-      await instance.setInitialNextWithdrawal(nowParsed);
-
+    it("should have initial next withdrawal period in correct timeframe", async () => {
       const withdrawalPeriod = await instance.withdrawalPeriod.call();
       const nextWithdrawal = await instance.nextWithdrawal.call();
       const lastWithdrawal = await instance.lastWithdrawal.call();
       const timingIsCorrect = lastWithdrawal['c'][0] + withdrawalPeriod['c'][0] == nextWithdrawal['c'][0];
       assert.equal(timingIsCorrect, true, "Contract withdrawal timing is correctly setup");
-    });
-
-    it("should fail calling changeWithdrawalPeriod", async () => {
-      try {
-        await instance.changeWithdrawalPeriod(12345678);
-      } catch (err) {
-        assert.equal(err.message, ERROR_INVALID_OPCODE);
-        return;
-      }
     });
   });
 
@@ -89,8 +86,6 @@ contract('StakeTree_MVP', function(accounts) {
       const balance = await instance.getBalance.call();
       assert.equal(balance, 10000, "Contract has 100 wei balance");
     });
-
-
 
     it("[account d] should have arrived at withdrawal 1", async () => {
       const withdrawalCounter = await instance.getWithdrawalCounterForFunder.call(account_d);
