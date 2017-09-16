@@ -193,26 +193,26 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     // Refund by beneficiary
-    it("[account d] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_d, to: instance.address, value: 1000});
-      const balance = await instance.getBalance.call();
-      assert.equal(balance, 1000, "Contract has 1000 wei balance");
-    });
+    // it("[account d] should add funds to the contract", async () => {
+    //   await web3.eth.sendTransaction({from: account_d, to: instance.address, value: 1000});
+    //   const balance = await instance.getBalance.call();
+    //   assert.equal(balance, 1000, "Contract has 1000 wei balance");
+    // });
 
-    it("should fail refunding by beneficiary if not beneficiary", async () => {
-      try {
-        await instance.refundByBeneficiary(account_d, account_b, {from: account_e});
-        assert.equal(true, false);
-      } catch(err){
-        assert.equal(err.message, ERROR_INVALID_OPCODE);
-      }
-    });
+    // it("should fail refunding by beneficiary if not beneficiary", async () => {
+    //   try {
+    //     await instance.refundByBeneficiary(account_d, account_b, {from: account_e});
+    //     assert.equal(true, false);
+    //   } catch(err){
+    //     assert.equal(err.message, ERROR_INVALID_OPCODE);
+    //   }
+    // });
 
-    it("should refund by beneficiary", async () => {
-      await instance.refundByBeneficiary(account_d, account_b, {from: account_a});
-      const balance = await instance.balanceOf.call(account_d);
-      assert.equal(balance, 0, "Account D has been refunded by beneficiary to new address");
-    });
+    // it("should refund by beneficiary", async () => {
+    //   await instance.refundByBeneficiary(account_d, account_b, {from: account_a});
+    //   const balance = await instance.balanceOf.call(account_d);
+    //   assert.equal(balance, 0, "Account D has been refunded by beneficiary to new address");
+    // });
   });
 
   describe('Sunset testing', async () => {
