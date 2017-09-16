@@ -21,7 +21,8 @@ contract('StakeTreeMVP', function(accounts) {
   const config = {
     beneficiaryAddress: account_a,
     withdrawalPeriod: 0,
-    startTime: nowParsed
+    startTime: nowParsed,
+    sunsetWithdrawalPeriod: 5184000 // 2 months
   };
 
   beforeEach(async () => {
@@ -30,6 +31,7 @@ contract('StakeTreeMVP', function(accounts) {
         config.beneficiaryAddress, 
         config.withdrawalPeriod, 
         config.startTime, 
+        config.sunsetWithdrawalPeriod,
       {from: account_a});
       deployed = true;
     }
