@@ -147,7 +147,7 @@ contract StakeTreeMVP {
     beneficiary.transfer(amount);
   }
 
-  // Patron refunding from funder
+  // Refunding by funder
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
   // TODO: set minimum withdrawal amount?
@@ -165,15 +165,21 @@ contract StakeTreeMVP {
     funder.transfer(amount);
   }
 
-  // Patron refund from beneficiary
+  // Refund by beneficiary
   // This is for cases where the funder lost access to their original account
   // They can only refund by contacting the beneficiary.
-  // TODO: Implement this properly
-  // function refundByBeneficiary(address funder, address newAddress) onlyByBeneficiary() {
-  //   uint amount = funderBalances[funder];
-  //   newAddress.call.gas(50000).value(amount)();
-  //   funderBalances[funder] -= amount;
-  // }
+  function refundByBeneficiary(address funder, address newAddress) onlyByBeneficiary {
+    // Check
+    uint amount = getRefundAmountForFunder(funder);
+
+    // Effects
+    totalCurrentFunders -= 1;
+    delete funderBalances[funder];
+    delete funderCounter[funder];
+
+    // Interaction
+    newAddress.transfer(amount);
+  }
 
   function sunset() onlyByBeneficiary {
     live = false;
