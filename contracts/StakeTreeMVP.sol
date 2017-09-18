@@ -120,7 +120,7 @@ contract StakeTreeMVP {
   }
 
   function balanceOf(address funder) constant returns (uint256) {
-    return funderBalances[funder];
+    return getRefundAmountForFunder(funder);
   }
 
   function getHowManyWithdrawalsForFunder(address funder) constant returns (uint) {
