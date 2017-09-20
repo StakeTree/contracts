@@ -45,3 +45,8 @@ So for example, let's say you have funder A who adds 10 ether when there were 5 
 
 As additional point, when an existing funder tops up their funding, we calculate the true amount, reset their counter and then add the new amount.
 
+## Deployment
+Feel free to deploy this contract if you need for yourself. Do contact me as I'd love to hear how people are using StakeTree contract. While the StakeTree.com is being built, I can also deploy this contract for anyone who's interested in getting funded but need some technical help. Email me: nieldlr@gmail.com
+
+## Contributing
+Feel free to contribute any code or fork this project. If you have ideas, open up an issue or contact me via email (above) as well.
