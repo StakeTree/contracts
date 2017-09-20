@@ -4,21 +4,18 @@ contract StakeTreeMVP {
   mapping(address => uint256) public funderBalances;
   mapping(address => uint256) public funderCounter;
 
-  bool public live = true;
-  uint totalCurrentFunders = 0;
-  uint withdrawalCounter = 0;
-  uint public minimumFundingAmount;
-  
-  address public beneficiary;
-  uint public sunsetWithdrawalPeriod;
-  uint public withdrawalPeriod;
-  uint public lastWithdrawal;
-  uint public nextWithdrawal;
+  bool public live = true; // For sunsetting contract
+  uint totalCurrentFunders = 0; // Keeps track of total funders
+  uint withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
+ 
+  address public beneficiary; // Address for beneficiary
+  uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
+  uint public withdrawalPeriod; // How long the beneficiary has to wait withdraw
+  uint public minimumFundingAmount; // Setting used for setting minimum amounts to fund contract with
+  uint public lastWithdrawal; // Last withdrawal time
+  uint public nextWithdrawal; // Next withdrawal time
 
-  uint public decimalMultiplier = 1000000000;
-
-  event LogFunding(address funderAddress, uint amount);
-  event LogAmount(uint amount, string source);
+  uint public decimalMultiplier = 1000000000; // For maths
 
   function StakeTreeMVP(
     address beneficiaryAddress, 
@@ -31,8 +28,8 @@ contract StakeTreeMVP {
     withdrawalPeriod = withdrawalPeriodInit;
     sunsetWithdrawalPeriod = sunsetWithdrawPeriodInit;
 
-    lastWithdrawal = withdrawalStart; // For tracking purposes
-    nextWithdrawal = lastWithdrawal + withdrawalPeriod; // Fixed period increase
+    lastWithdrawal = withdrawalStart; 
+    nextWithdrawal = lastWithdrawal + withdrawalPeriod;
 
     minimumFundingAmount = minimumFundingAmountInit;
   }
@@ -63,17 +60,24 @@ contract StakeTreeMVP {
     _;
   }
 
+  /*
+  * Pay to contract to fund it.
+  * Can only happen when live and over a minimum amount set by the beneficiary
+  */
   function () payable onlyWhenLive {
     if(msg.value > minimumFundingAmount){
-      // Only increase total funders when they are a new funder
+      // Only increase total funders when we have a new funder
       if(balanceOf(msg.sender) == 0) {
-        totalCurrentFunders += 1;
+        totalCurrentFunders += 1; // Increase total funder count
+
         // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
         funderCounter[msg.sender] = withdrawalCounter;
+        // Keep track of the initial balance for the funder
         funderBalances[msg.sender] += msg.value;
       }
       else {
         // If the funder is already in the pool let's update things while we're at it
+        // This calculates their actual balance left and adds their top up amount
         funderBalances[msg.sender] = getRefundAmountForFunder(msg.sender) + msg.value;
         // Reset withdrawal counter
         funderCounter[msg.sender] = withdrawalCounter;
@@ -105,6 +109,12 @@ contract StakeTreeMVP {
   function getWithdrawalCounterForFunder(address funder) constant returns (uint) {
     return funderCounter[funder];
   }
+
+  /*
+  * To calculate the refund amount we look at how many times the beneficiary
+  * has withdrawn since the funder added their funds. 
+  * We use that deduct 10% for each withdrawal.
+  */
 
   function getRefundAmountForFunder(address funder) constant returns (uint) {
     uint amount = funderBalances[funder];
@@ -141,8 +151,6 @@ contract StakeTreeMVP {
     minimumFundingAmount = amount;
   }
 
-  // TODO: Set minimum withdrawal amount
-  // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
   function withdrawToBeneficiary() onlyAfterNextWithdrawalDate onlyWhenLive {
     // Check
     uint amount = calculateWithdrawalAmount(this.balance);
@@ -158,8 +166,6 @@ contract StakeTreeMVP {
   // Refunding by funder
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
-  // TODO: set minimum withdrawal amount?
-  // TODO: Changed to check-effects-interactions. Question: what if the transfer fails?
   function refundByFunder(address funder) onlyByFunder(funder) {
     // Check
     uint amount = getRefundAmountForFunder(funder);
@@ -173,22 +179,12 @@ contract StakeTreeMVP {
     funder.transfer(amount);
   }
 
-  // Refund by beneficiary
-  // This is for cases where the funder lost access to their original account
-  // They can only refund by contacting the beneficiary.
-  // Note: Remove this for now. Provides loophole for beneficiary to drain funds.
-  // function refundByBeneficiary(address funder, address newAddress) onlyByBeneficiary {
-  //   // Check
-  //   uint amount = getRefundAmountForFunder(funder);
-
-  //   // Effects
-  //   totalCurrentFunders -= 1;
-  //   delete funderBalances[funder];
-  //   delete funderCounter[funder];
-
-  //   // Interaction
-  //   newAddress.transfer(amount);
-  // }
+  /*
+  * The beneficiary can decide to stop using this contract.
+  * They use this sunset function to put it into sunset mode.
+  * The beneficiary can then swipe rest of the funds after a set time
+  * if funders have not withdrawn their funds.
+  */
 
   function sunset() onlyByBeneficiary {
     live = false;
