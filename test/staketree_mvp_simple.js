@@ -24,7 +24,8 @@ contract('StakeTreeMVP', function(accounts) {
     beneficiaryAddress: account_a,
     withdrawalPeriod: 3000,
     startTime: nowParsed,
-    sunsetWithdrawalPeriod: 5184000 // 2 months
+    sunsetWithdrawalPeriod: 5184000, // 2 months
+    minimumFundingAmount: 1
   };
 
   beforeEach(async () => {
@@ -33,14 +34,16 @@ contract('StakeTreeMVP', function(accounts) {
         config.beneficiaryAddress, 
         config.withdrawalPeriod, 
         config.startTime,
-        config.sunsetWithdrawalPeriod,  
+        config.sunsetWithdrawalPeriod,
+        config.minimumFundingAmount , 
       {from: account_a});
 
       instance2 = await StakeTreeMVP.new(
         config.beneficiaryAddress, 
         0,
         config.startTime,
-        0,  
+        0,
+        config.minimumFundingAmount,  
       {from: account_a});
       deployed = true;
     }
@@ -55,6 +58,20 @@ contract('StakeTreeMVP', function(accounts) {
     it("should have correct minimum funding amount", async () => { 
       const min = await instance.minimumFundingAmount.call();
       assert.equal(min, 1, "Minimum amount is set correctly to 1 wei");
+    });
+
+    it("should change minimum funding amount", async () => { 
+      const weiAmount = web3.toWei(0.01, 'ether');
+      await instance.setMinimumFundingAmount(weiAmount);
+      const min = await instance.minimumFundingAmount.call();
+      assert.equal(min, weiAmount, "Minimum amount is set correctly to 0.1 ether");
+    });
+
+    it("should change minimum funding amount back", async () => { 
+      const weiAmount = web3.toWei(1, 'wei');
+      await instance.setMinimumFundingAmount(weiAmount);
+      const min = await instance.minimumFundingAmount.call();
+      assert.equal(min, weiAmount, "Minimum amount is set correctly to 1 wei");
     });
 
     it("should have set withdrawal timeframe correctly", async () => {
