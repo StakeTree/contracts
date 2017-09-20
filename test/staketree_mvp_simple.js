@@ -67,6 +67,16 @@ contract('StakeTreeMVP', function(accounts) {
       assert.equal(min, weiAmount, "Minimum amount is set correctly to 0.1 ether");
     });
 
+    it("should fail changing minimum funding amount by non-beneficiary", async () => { 
+      try {
+        const weiAmount = web3.toWei(0.01, 'ether');
+        await instance.setMinimumFundingAmount(weiAmount, {from: account_b});
+        assert.equal(true, false);
+      } catch(err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
     it("should change minimum funding amount back", async () => { 
       const weiAmount = web3.toWei(1, 'wei');
       await instance.setMinimumFundingAmount(weiAmount);
