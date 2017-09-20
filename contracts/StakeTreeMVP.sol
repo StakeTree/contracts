@@ -7,7 +7,7 @@ contract StakeTreeMVP {
   bool public live = true;
   uint totalCurrentFunders = 0;
   uint withdrawalCounter = 0;
-  uint public minimumFundingAmount = 1 wei; // Prevent spam & support meaningful contributions for now
+  uint public minimumFundingAmount;
   
   address public beneficiary;
   uint public sunsetWithdrawalPeriod;
@@ -24,7 +24,8 @@ contract StakeTreeMVP {
     address beneficiaryAddress, 
     uint withdrawalPeriodInit, 
     uint withdrawalStart, 
-    uint sunsetWithdrawPeriodInit) {
+    uint sunsetWithdrawPeriodInit,
+    uint minimumFundingAmountInit) {
 
     beneficiary = beneficiaryAddress;
     withdrawalPeriod = withdrawalPeriodInit;
@@ -32,6 +33,8 @@ contract StakeTreeMVP {
 
     lastWithdrawal = withdrawalStart; // For tracking purposes
     nextWithdrawal = lastWithdrawal + withdrawalPeriod; // Fixed period increase
+
+    minimumFundingAmount = minimumFundingAmountInit;
   }
 
   // Modifiers
@@ -131,6 +134,11 @@ contract StakeTreeMVP {
   function setNextWithdrawalTime(uint timestamp) private {
     lastWithdrawal = timestamp; // For tracking purposes
     nextWithdrawal = nextWithdrawal + withdrawalPeriod; // Fixed period increase
+  }
+
+  function setMinimumFundingAmount(uint amount) onlyByBeneficiary {
+    require(amount > 0);
+    minimumFundingAmount = amount;
   }
 
   // TODO: Set minimum withdrawal amount
