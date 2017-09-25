@@ -78,7 +78,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account c] should refund by funder", async () => {
-      await instance.refundByFunder(account_c, {from: account_c});
+      await instance.refund({from: account_c});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Account B has been refunded 90. Wallet balance is now 0");
     });
@@ -157,7 +157,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account d] should refund their funds", async () => {
-      await instance.refundByFunder(account_d, {from: account_d});
+      await instance.refund({from: account_d});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Account D has been refunded 14580. Wallet balance is now 0");
     });
@@ -232,15 +232,18 @@ contract('StakeTreeMVP', function(accounts) {
     // Refund Account D
     // D 90 -> 0
     it("[account d] should refund their funds", async () => {
-      await instance.refundByFunder(account_d, {from: account_d});
+      await instance.refund({from: account_d});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 1170, "Account D has been refunded 90. Wallet balance is now 1170");
     });
 
-    it("[account d] should refund their funds again [does nothing]", async () => {
-      await instance.refundByFunder(account_d, {from: account_d});
-      const balance = await instance.getBalance.call();
-      assert.equal(balance, 1170, "Nothing happened. Goooood.");
+    it("[account d] should fail refunding their funds again", async () => {
+      try {
+        await instance.refund({from: account_d});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
     });
 
     // Account F tops up
@@ -283,7 +286,7 @@ contract('StakeTreeMVP', function(accounts) {
     // Refund last two accounts
     // 1350 -> 540
     it("[account e] should refund their funds", async () => {
-      await instance.refundByFunder(account_e, {from: account_e});
+      await instance.refund({from: account_e});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 540, "Account E has been refunded 810. Wallet balance is now 540");
     });
@@ -291,7 +294,7 @@ contract('StakeTreeMVP', function(accounts) {
     // 540 -> 0
     it("[account f] should refund their funds", async () => {
       const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
-      await instance.refundByFunder(account_f, {from: account_f});
+      await instance.refund({from: account_f});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Account F has been refunded 540. Wallet balance is now 0");
     });

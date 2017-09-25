@@ -188,9 +188,9 @@ contract('StakeTreeMVP', function(accounts) {
   });
 
   describe('Refund testing', async () => {
-    it("should fail to refund if refunding done by different account", async () => {
+    it("should fail to refund if refunding done by non-funder", async () => {
       try {
-        await instance.refundByFunder(account_a, {from: account_b});
+        await instance.refund({from: account_c});
         assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
@@ -198,9 +198,18 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account a] should refund by funder", async () => {
-      await instance.refundByFunder(account_a, {from: account_a});
+      await instance.refund({from: account_a});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 450, "Account A has been refunded 1800. Wallet balance is now 450");
+    });
+
+    it("[account a] should fail refunding again cause there's no funds left for funder", async () => {
+      try {
+        await instance.refund({from: account_a});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
     });
 
     it("should get total funders as 1", async () => {
@@ -209,7 +218,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account b] should refund by funder", async () => {
-      await instance.refundByFunder(account_b, {from: account_b});
+      await instance.refund({from: account_b});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 0, "Account B has been refunded 450. Wallet balance is now 0");
     });
@@ -218,28 +227,6 @@ contract('StakeTreeMVP', function(accounts) {
       const totalFunders = await instance.getCurrentTotalFunders.call();
       assert.equal(totalFunders, 0, "There are 0 total funders");
     });
-
-    // Refund by beneficiary
-    // it("[account d] should add funds to the contract", async () => {
-    //   await web3.eth.sendTransaction({from: account_d, to: instance.address, value: 1000});
-    //   const balance = await instance.getBalance.call();
-    //   assert.equal(balance, 1000, "Contract has 1000 wei balance");
-    // });
-
-    // it("should fail refunding by beneficiary if not beneficiary", async () => {
-    //   try {
-    //     await instance.refundByBeneficiary(account_d, account_b, {from: account_e});
-    //     assert.equal(true, false);
-    //   } catch(err){
-    //     assert.equal(err.message, ERROR_INVALID_OPCODE);
-    //   }
-    // });
-
-    // it("should refund by beneficiary", async () => {
-    //   await instance.refundByBeneficiary(account_d, account_b, {from: account_a});
-    //   const balance = await instance.balanceOf.call(account_d);
-    //   assert.equal(balance, 0, "Account D has been refunded by beneficiary to new address");
-    // });
   });
 
   describe('Sunset testing', async () => {
