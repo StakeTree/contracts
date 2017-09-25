@@ -31,6 +31,8 @@ Funders send ether to the contract address.
 The beneficiary needs to call the `withdrawToBeneficiary()` function from their beneficiary account.
 ### Refunding funders
 The funder needs to call the `refundByFunder()` function using their funding address as a parameter. The ether will be returned to their original funding account. Their isn't an option to send the ether to another address at the moment.
+### Sunsetting contract
+If the beneficiary decides to end this contract, they can sunset it calling `sunset()`. This puts the contract into sunset mode. This prevents the beneficary from withdrawing more funds through `withdrawToBeneficiary()` & also prevents people adding more funds. At the end of the sunset withdrawal period, the beneficiary can swipe the rest of the ether that was left in the contract.
 
 ## Contract Mechanism: Keeping track of funder balances
 In an ideal world when a withdrawal occurs, we loop through each funder and deduct 10%. However, due to the constraints of running loops on dynamic mappings on Ethereum, we have to get a bit more creative to keep track of funder amounts when withdrawals occur.
