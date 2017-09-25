@@ -6,7 +6,7 @@ const nowParsed = parseInt(nowUnix.toFixed(0), 10);
 // Deploy config
 const config = {
   beneficiaryAddress: "0x905d7605f2c79d4dad2c42586f62bb4bae6dfdb3",
-  withdrawalPeriod: 1209600, // 2 weeks
+  withdrawalPeriod: 604800, // 1 week
   startTime: nowParsed,
   sunsetWithdrawalPeriod: 5184000, // 2 months
   minimumFundingAmount: 10000000000000000 // 0.01 ether

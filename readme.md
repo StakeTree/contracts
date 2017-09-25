@@ -20,7 +20,7 @@ uint sunsetWithdrawPeriodInit,
 uint minimumFundingAmountInit
 ```
 * `beneficiaryAddress` - This is the address for the beneficiary who can withdraw funds. The beneficiary also has additional priviliges. They can update the minimum funding amount, sunset the contract and swipe it after sunset withdrawal period. This address cannot be changed.
-* `withdrawalPeriodInit` - This sets the withdrawal period interval in seconds. After how many seconds the beneficiary can withdraw each time. The suggested time is 1209600 seconds, which is two weeks.
+* `withdrawalPeriodInit` - This sets the withdrawal period interval in seconds. After how many seconds the beneficiary can withdraw each time. The suggested time is 604800 seconds, which is one week.
 * `withdrawalStart` - This sets the initial start time of the contract. Usually setting it to the current time when contract deployed is a good idea. If you have to start the withdrawal time further in the future, you can extend if you like.
 * `sunsetWithdrawPeriodInit` - The amount of time in seconds needs to lapse before the beneficiary can swip the funds after sunsetting the contract. Suggested time is 5184000 seconds, which is two months.
 * `minimumFundingAmountInit` - The minimum amount in wei that funders can contribute at a time. Suggested amount 0.01 ether or 10000000000000000 wei.
