@@ -105,13 +105,13 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account a] should refund funder", async () => {
-      await instance.refundByFunder(account_a, {from: account_a});
+      await instance.refund({from: account_a});
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 312, "Pool balance should be 312 wei balance");
     });
 
     it("[account b] should refund funder", async () => {
-      await instance.refundByFunder(account_b, {from: account_b});
+      await instance.refund({from: account_b});
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 2, "Pool balance should be 2 wei balance");
     });
@@ -150,7 +150,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account a] should refund funder", async () => {
-      await instance.refundByFunder(account_a, {from: account_a});
+      await instance.refund({from: account_a});
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 4, "Pool balance should be 3 wei balance");
     });

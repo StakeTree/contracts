@@ -35,11 +35,6 @@ contract StakeTreeMVP {
   }
 
   // Modifiers
-  modifier onlyByFunder(address funder) {
-    require(msg.sender == funder);
-    _;
-  }
-
   modifier onlyByBeneficiary() {
     require(msg.sender == beneficiary);
     _;
@@ -166,17 +161,22 @@ contract StakeTreeMVP {
   // Refunding by funder
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
-  function refundByFunder(address funder) onlyByFunder(funder) {
+  function refund() {
     // Check
-    uint amount = getRefundAmountForFunder(funder);
+    uint walletBalance = this.balance;
+    uint amount = getRefundAmountForFunder(msg.sender);
+    require(amount > 0);
 
     // Effects
     totalCurrentFunders -= 1;
-    delete funderBalances[funder];
-    delete funderCounter[funder];
+    delete funderBalances[msg.sender];
+    delete funderCounter[msg.sender];
 
     // Interaction
-    funder.transfer(amount);
+    msg.sender.transfer(amount);
+
+    // Make sure this worked as intended
+    assert(this.balance == walletBalance-amount);
   }
 
   /*
