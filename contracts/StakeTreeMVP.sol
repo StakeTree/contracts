@@ -194,7 +194,7 @@ contract StakeTreeMVP {
   }
 
   function swipe(address recipient) onlyWhenSunset onlyByBeneficiary {
-    require(now > sunsetWithdrawDate);
+    require(now >= sunsetWithdrawDate);
 
     recipient.transfer(this.balance);
   }
