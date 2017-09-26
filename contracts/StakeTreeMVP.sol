@@ -47,6 +47,11 @@ contract StakeTreeMVP {
     _;
   }
 
+  modifier onlyByFunder() {
+    require(isFunder(msg.sender));
+    _;
+  }
+
   modifier onlyAfterNextWithdrawalDate() {
     require(now >= nextWithdrawal);
     _;
@@ -181,7 +186,7 @@ contract StakeTreeMVP {
   // Refunding by funder
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
-  function refund() {
+  function refund() onlyByFunder {
     // Check
     uint walletBalance = this.balance;
     uint amount = getRefundAmountForFunder(msg.sender);

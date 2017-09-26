@@ -174,6 +174,15 @@ contract('StakeTreeMVP', function(accounts) {
       const totalFunders = await instance.getCurrentTotalFunders.call();
       assert.equal(totalFunders, 1, "There are 1 total funders");
     });
+
+    it("should fail refunding by non-funder", async () => {
+      try {
+        await instance.refund({from: account_b});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
   });
 
   describe('Add account b integration testing', async () => {
