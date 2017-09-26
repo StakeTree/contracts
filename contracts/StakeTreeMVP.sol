@@ -58,10 +58,18 @@ contract StakeTreeMVP {
   }
 
   /*
-  * Pay to contract to fund it.
+  * External accounts can pay directly to contract to fund it.
+  */
+  function () payable {
+    fund();
+  }
+
+  /*
+  * Additional api for contracts to use as well
   * Can only happen when live and over a minimum amount set by the beneficiary
   */
-  function () payable onlyWhenLive {
+
+  function fund() payable onlyWhenLive {
     require(msg.value > minimumFundingAmount);
 
     // Only increase total funders when we have a new funder
