@@ -56,7 +56,7 @@ contract('StakeTreeMVP', function(accounts) {
 
   describe('Simple integration test: New funder, account_c, arrives, withdrawal happens and then refund', async () => {
     it("[account c] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_c, to: instance.address, value: 100});
+      await web3.eth.sendTransaction({gas: 150000, from: account_c, to: instance.address, value: 100});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 100, "Contract has 100 wei balance");
     });
@@ -86,7 +86,7 @@ contract('StakeTreeMVP', function(accounts) {
 
   describe('Complex integration test 1: one funder -> two withdrawals -> funder tops up -> three withdrawals -> funder refunds', async () => {
     it("[account d] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_d, to: instance.address, value: 10000});
+      await web3.eth.sendTransaction({gas: 150000, from: account_d, to: instance.address, value: 10000});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 10000, "Contract has 100 wei balance");
     });
@@ -118,7 +118,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     // Topup
     it("[account d] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_d, to: instance.address, value: 11900});
+      await web3.eth.sendTransaction({gas: 150000, from: account_d, to: instance.address, value: 11900});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 20000, "Contract has 20000 wei balance");
     });
@@ -166,17 +166,17 @@ contract('StakeTreeMVP', function(accounts) {
   describe('Complex integration test 2: three funders arrive -> one tops up -> withdrawal -> refund one -> one tops up -> 2nd withdrawal -> refund two', async () => {
     // Three funders arrive
     it("[account d] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_d, to: instance.address, value: 100});
+      await web3.eth.sendTransaction({gas: 150000, from: account_d, to: instance.address, value: 100});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 100, "Contract has 100 wei balance");
     });
     it("[account e] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_e, to: instance.address, value: 200});
+      await web3.eth.sendTransaction({gas: 150000, from: account_e, to: instance.address, value: 200});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 300, "Contract has 300 wei balance");
     });
     it("[account f] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_f, to: instance.address, value: 300});
+      await web3.eth.sendTransaction({gas: 150000, from: account_f, to: instance.address, value: 300});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 600, "Contract has 600 wei balance");
     });
@@ -188,7 +188,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     // One tops up
     it("[account e] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_e, to: instance.address, value: 800});
+      await web3.eth.sendTransaction({gas: 150000, from: account_e, to: instance.address, value: 800});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 1400, "Contract has 1100 wei balance");
     });
@@ -249,7 +249,7 @@ contract('StakeTreeMVP', function(accounts) {
     // Account F tops up
     // F 270 -> 600
     it("[account f] should add funds to the contract again", async () => {
-      await web3.eth.sendTransaction({from: account_f, to: instance.address, value: 330});
+      await web3.eth.sendTransaction({gas: 150000, from: account_f, to: instance.address, value: 330});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 1500, "Contract has 1500 wei balance");
     });

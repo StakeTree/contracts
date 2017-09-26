@@ -61,7 +61,7 @@ contract('StakeTreeMVP', function(accounts) {
 
   describe('Account A', async () => {
     it("[account a] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_a, to: instance.address, value: 99});
+      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 99});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 99, "Contract has 99 wei balance");
     });
@@ -77,13 +77,13 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account a] should add more funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_a, to: instance.address, value: 133});
+      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 133});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 232, "Contract has 2000 wei balance");
     });
 
     it("[account b] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_b, to: instance.address, value: 345});
+      await web3.eth.sendTransaction({gas: 150000, from: account_b, to: instance.address, value: 345});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 577, "Contract has 577 wei balance");
     });
@@ -117,7 +117,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account a] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_a, to: instance.address, value: 107});
+      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 107});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 109, "Contract has 109 wei balance");
     });

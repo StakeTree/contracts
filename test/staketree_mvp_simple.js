@@ -90,7 +90,7 @@ contract('StakeTreeMVP', function(accounts) {
     it("should fail sending below minimum funding amount", async () => { 
       try {
         const weiAmount = web3.toWei(0.001, 'ether');
-        await web3.eth.sendTransaction({from: account_a, to: instance.address, value: weiAmount});
+        await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance.address, value: weiAmount});
         assert.equal(true, false);
       } catch(err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
@@ -144,7 +144,7 @@ contract('StakeTreeMVP', function(accounts) {
 
   describe('Account A unit testing', async () => {
     it("[account a] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_a, to: instance.address, value: 1000});
+      await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance.address, value: 1000});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 1000, "Contract has 1000 wei balance");
     });
@@ -160,7 +160,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account a] should add more funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_a, to: instance.address, value: 1000});
+      await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance.address, value: 1000});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 2000, "Contract has 2000 wei balance");
     });
@@ -178,7 +178,7 @@ contract('StakeTreeMVP', function(accounts) {
 
   describe('Add account b integration testing', async () => {
     it("[account b] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_b, to: instance.address, value: 500});
+      await web3.eth.sendTransaction({gas: 100000, from: account_b, to: instance.address, value: 500});
       const balance = await instance.getBalance.call();
       assert.equal(balance, 2500, "Contract has 2500 wei balance");
     });
@@ -293,7 +293,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[instance 2] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({from: account_a, to: instance2.address, value: 1000});
+      await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance2.address, value: 1000});
       const balance = await instance2.getBalance.call();
       assert.equal(balance, 1000, "Contract has 1000 wei balance");
     });
@@ -306,7 +306,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[instance 2] should fail adding funds to the contract after sunset", async () => {
       try {
-        await web3.eth.sendTransaction({from: account_a, to: instance2.address, value: 1000});
+        await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance2.address, value: 1000});
         assert.equal(true, false);
       } catch(err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);

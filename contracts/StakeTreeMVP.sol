@@ -1,8 +1,13 @@
 pragma solidity ^0.4.11;
 
 contract StakeTreeMVP {
-  mapping(address => uint256) public funderBalances;
-  mapping(address => uint256) public funderCounter;
+
+  struct Funder {
+    bool exists;
+    uint balance;
+    uint withdrawalCounter;
+  }
+  mapping(address => Funder) public funders;
 
   bool public live = true; // For sunsetting contract
   uint totalCurrentFunders = 0; // Keeps track of total funders
@@ -73,20 +78,21 @@ contract StakeTreeMVP {
     require(msg.value > minimumFundingAmount);
 
     // Only increase total funders when we have a new funder
-    if(balanceOf(msg.sender) == 0) {
+    if(!isFunder(msg.sender)) {
       totalCurrentFunders += 1; // Increase total funder count
 
-      // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
-      funderCounter[msg.sender] = withdrawalCounter;
-      // Keep track of the initial balance for the funder
-      funderBalances[msg.sender] += msg.value;
+      funders[msg.sender] = Funder({
+        exists: true,
+        balance: msg.value,
+        withdrawalCounter: withdrawalCounter // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
+      });
     }
     else {
       // If the funder is already in the pool let's update things while we're at it
       // This calculates their actual balance left and adds their top up amount
-      funderBalances[msg.sender] = getRefundAmountForFunder(msg.sender) + msg.value;
+      funders[msg.sender].balance = getRefundAmountForFunder(msg.sender) + msg.value;
       // Reset withdrawal counter
-      funderCounter[msg.sender] = withdrawalCounter;
+      funders[msg.sender].withdrawalCounter = withdrawalCounter;
     }
   }
 
@@ -111,8 +117,8 @@ contract StakeTreeMVP {
     return withdrawalCounter;
   }
 
-  function getWithdrawalCounterForFunder(address funder) constant returns (uint) {
-    return funderCounter[funder];
+  function getWithdrawalCounterForFunder(address addr) constant returns (uint) {
+    return funders[addr].withdrawalCounter;
   }
 
   /*
@@ -121,9 +127,9 @@ contract StakeTreeMVP {
   * We use that deduct 10% for each withdrawal.
   */
 
-  function getRefundAmountForFunder(address funder) constant returns (uint) {
-    uint amount = funderBalances[funder];
-    uint withdrawalTimes = getHowManyWithdrawalsForFunder(funder);
+  function getRefundAmountForFunder(address addr) constant returns (uint) {
+    uint amount = funders[addr].balance;
+    uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
     uint bigNumberAmount = amount*decimalMultiplier;
     
     for(uint i=0; i<withdrawalTimes; i++) {
@@ -141,8 +147,12 @@ contract StakeTreeMVP {
     return getRefundAmountForFunder(funder);
   }
 
-  function getHowManyWithdrawalsForFunder(address funder) constant returns (uint) {
-    return withdrawalCounter - funderCounter[funder];
+  function getHowManyWithdrawalsForFunder(address addr) constant returns (uint) {
+    return withdrawalCounter - getWithdrawalCounterForFunder(addr);
+  }
+
+  function isFunder(address addr) constant returns (bool) {
+    return funders[addr].exists;
   }
 
   // State changing functions
@@ -179,8 +189,7 @@ contract StakeTreeMVP {
 
     // Effects
     totalCurrentFunders -= 1;
-    delete funderBalances[msg.sender];
-    delete funderCounter[msg.sender];
+    delete funders[msg.sender];
 
     // Interaction
     msg.sender.transfer(amount);
