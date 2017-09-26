@@ -148,7 +148,7 @@ contract StakeTreeMVP {
     minimumFundingAmount = amount;
   }
 
-  function withdrawToBeneficiary() onlyAfterNextWithdrawalDate onlyWhenLive {
+  function withdrawToBeneficiary() onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive  {
     // Check
     uint amount = calculateWithdrawalAmount(this.balance);
 

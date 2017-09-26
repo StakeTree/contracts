@@ -131,6 +131,15 @@ contract('StakeTreeMVP', function(accounts) {
       const amount = await instance.calculateWithdrawalAmount.call(1000);
       assert.equal(amount, 100, "Calculated withdrawal amount");
     });
+
+    it("should fail withdrawing by non-beneficiary", async () => {
+      try {
+        await instance.withdrawToBeneficiary({from: account_b});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
   });
 
   describe('Account A unit testing', async () => {
