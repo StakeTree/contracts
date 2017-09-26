@@ -15,6 +15,8 @@ contract StakeTreeMVP {
   uint public lastWithdrawal; // Last withdrawal time
   uint public nextWithdrawal; // Next withdrawal time
 
+  uint public sunsetWithdrawDate;
+
   uint public decimalMultiplier = 1000000000; // For maths
 
   function StakeTreeMVP(
@@ -61,7 +63,7 @@ contract StakeTreeMVP {
   */
   function () payable onlyWhenLive {
     require(msg.value > minimumFundingAmount);
-    
+
     // Only increase total funders when we have a new funder
     if(balanceOf(msg.sender) == 0) {
       totalCurrentFunders += 1; // Increase total funder count
@@ -187,11 +189,11 @@ contract StakeTreeMVP {
   */
 
   function sunset() onlyByBeneficiary {
+    sunsetWithdrawDate = now + sunsetWithdrawalPeriod;
     live = false;
   }
 
   function swipe(address recipient) onlyWhenSunset onlyByBeneficiary {
-    uint sunsetWithdrawDate = lastWithdrawal + sunsetWithdrawalPeriod;
     require(now > sunsetWithdrawDate);
 
     recipient.transfer(this.balance);

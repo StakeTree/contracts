@@ -38,11 +38,21 @@ contract('StakeTreeMVP', function(accounts) {
         config.minimumFundingAmount , 
       {from: account_a});
 
+      // For testing sunset & swiping
       instance2 = await StakeTreeMVP.new(
         config.beneficiaryAddress, 
         0,
         config.startTime,
         0,
+        config.minimumFundingAmount,  
+      {from: account_a});
+
+      // For testing sunset & swiping
+      instance3 = await StakeTreeMVP.new(
+        config.beneficiaryAddress, 
+        0,
+        config.startTime-10000,
+        1000,
         config.minimumFundingAmount,  
       {from: account_a});
       deployed = true;
@@ -318,5 +328,19 @@ contract('StakeTreeMVP', function(accounts) {
       assert.equal(balance, 0, "Contract has been swiped by beneficiary");
     });
 
+    it("[instance 3] should sunset contract", async () => {
+      await instance3.sunset({from: account_a});
+      const isLive = await instance3.live.call();
+      assert.equal(isLive, false, "Contract has been put in sunset mode");
+    });
+
+    it("[instance 3] should not swipe contract immediately", async () => {
+      try {
+        await instance3.swipe(account_c, {from: account_a});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
   });
 });
