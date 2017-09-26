@@ -89,7 +89,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 520, "Beneficiary has withdrawn 10%");
     });
@@ -128,7 +128,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const actualBalance = await instance.getBalance.call();
       assert.equal(actualBalance, 99, "Beneficiary has withdrawn 10%");
     });
@@ -139,7 +139,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const actualBalance = await instance.getBalance.call();
       assert.equal(actualBalance, 90, "Beneficiary has withdrawn 10%");
     });

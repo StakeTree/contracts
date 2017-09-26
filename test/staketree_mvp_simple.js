@@ -134,7 +134,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("should fail withdrawing by non-beneficiary", async () => {
       try {
-        await instance.withdrawToBeneficiary({from: account_b});
+        await instance.withdraw({from: account_b});
         assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
@@ -196,14 +196,14 @@ contract('StakeTreeMVP', function(accounts) {
   
   describe('Withdrawal testing', async () => {
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 2250, "Beneficiary has withdrawn 10%");
     });
 
     it("should fail withdrawing to beneficiary", async () => {
       try {
-        await instance.withdrawToBeneficiary();
+        await instance.withdraw();
         assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
@@ -285,7 +285,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[instance 1] should fail withdrawing by beneficiary", async () => {
       try {
-        await instance.withdrawToBeneficiary();
+        await instance.withdraw();
         assert.equal(true, false);
       } catch(err){
         assert.equal(err.message, ERROR_INVALID_OPCODE);
@@ -315,7 +315,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[instance 2] should fail withdrawing by beneficiary", async () => {
       try {
-        await instance2.withdrawToBeneficiary();
+        await instance2.withdraw();
         assert.equal(true, false);
       } catch(err){
         assert.equal(err.message, ERROR_INVALID_OPCODE);

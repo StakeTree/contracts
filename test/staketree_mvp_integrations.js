@@ -72,7 +72,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary({from: account_a});
+      await instance.withdraw({from: account_a});
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 90, "Beneficiary has withdrawn 10%");
     });
@@ -98,7 +98,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     // x2
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 9000, "Beneficiary has withdrawn 10%");
     });
@@ -107,7 +107,7 @@ contract('StakeTreeMVP', function(accounts) {
       assert.equal(totalRefund, 9000, "Account D has 9000 left to withdraw");
     });
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 8100, "Beneficiary has withdrawn 10%");
     });
@@ -129,7 +129,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     // x3
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 18000, "Beneficiary has withdrawn 10%");
     });
@@ -138,7 +138,7 @@ contract('StakeTreeMVP', function(accounts) {
       assert.equal(totalRefund, 18000, "Account D has 9000 left to withdraw");
     });
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 16200, "Beneficiary has withdrawn 10%");
     });
@@ -147,7 +147,7 @@ contract('StakeTreeMVP', function(accounts) {
       assert.equal(totalRefund, 16200, "Account D has 81000 left to withdraw");
     });
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 14580, "Beneficiary has withdrawn 10%");
     });
@@ -206,7 +206,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     // Withdraw
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 1260, "Beneficiary has withdrawn 10%");
     });
@@ -261,7 +261,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     // Withdraw
     it("should withdraw to beneficiary", async () => {
-      await instance.withdrawToBeneficiary();
+      await instance.withdraw();
       const balanceAfter = await instance.getBalance.call();
       assert.equal(balanceAfter, 1350, "Beneficiary has withdrawn 10%");
     });
