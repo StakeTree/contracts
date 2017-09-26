@@ -5,7 +5,7 @@ contract StakeTreeMVP {
   struct Funder {
     bool exists;
     uint balance;
-    uint withdrawalCounter;
+    uint withdrawalEntry;
   }
   mapping(address => Funder) public funders;
 
@@ -89,7 +89,7 @@ contract StakeTreeMVP {
       funders[msg.sender] = Funder({
         exists: true,
         balance: msg.value,
-        withdrawalCounter: withdrawalCounter // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
+        withdrawalEntry: withdrawalCounter // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
       });
     }
     else {
@@ -97,7 +97,7 @@ contract StakeTreeMVP {
       // This calculates their actual balance left and adds their top up amount
       funders[msg.sender].balance = getRefundAmountForFunder(msg.sender) + msg.value;
       // Reset withdrawal counter
-      funders[msg.sender].withdrawalCounter = withdrawalCounter;
+      funders[msg.sender].withdrawalEntry = withdrawalCounter;
     }
   }
 
@@ -122,8 +122,8 @@ contract StakeTreeMVP {
     return withdrawalCounter;
   }
 
-  function getWithdrawalCounterForFunder(address addr) constant returns (uint) {
-    return funders[addr].withdrawalCounter;
+  function getWithdrawalEntryForFunder(address addr) constant returns (uint) {
+    return funders[addr].withdrawalEntry;
   }
 
   /*
@@ -153,7 +153,7 @@ contract StakeTreeMVP {
   }
 
   function getHowManyWithdrawalsForFunder(address addr) constant returns (uint) {
-    return withdrawalCounter - getWithdrawalCounterForFunder(addr);
+    return withdrawalCounter - getWithdrawalEntryForFunder(addr);
   }
 
   function isFunder(address addr) constant returns (bool) {

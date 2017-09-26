@@ -67,7 +67,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account c] should have arrived at withdrawal 0", async () => {
-      const withdrawalCounter = await instance.getWithdrawalCounterForFunder.call(account_c);
+      const withdrawalCounter = await instance.getWithdrawalEntryForFunder.call(account_c);
       assert.equal(withdrawalCounter, 0, "Arrived at withdrawal 0");
     });
 
@@ -92,7 +92,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("[account d] should have arrived at withdrawal 1", async () => {
-      const withdrawalCounter = await instance.getWithdrawalCounterForFunder.call(account_d);
+      const withdrawalCounter = await instance.getWithdrawalEntryForFunder.call(account_d);
       assert.equal(withdrawalCounter, 1, "Arrived at withdrawal 1");
     });
 
