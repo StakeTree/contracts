@@ -186,6 +186,7 @@ contract StakeTreeMVP {
   // Refunding by funder
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
+  // We also remove the funder if they succesfully exit with their funds
   function refund() onlyByFunder {
     // Check
     uint walletBalance = this.balance;
@@ -193,14 +194,20 @@ contract StakeTreeMVP {
     require(amount > 0);
 
     // Effects
-    totalCurrentFunders -= 1;
-    delete funders[msg.sender];
+    removeFunder();
 
     // Interaction
     msg.sender.transfer(amount);
 
     // Make sure this worked as intended
     assert(this.balance == walletBalance-amount);
+  }
+
+  // Used when the funder wants to remove themselves as a funder
+  // without refunding. Their eth stays in the pool
+  function removeFunder() onlyByFunder {
+    delete funders[msg.sender];
+    totalCurrentFunders -= 1;
   }
 
   /*

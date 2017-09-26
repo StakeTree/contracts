@@ -261,6 +261,27 @@ contract('StakeTreeMVP', function(accounts) {
       assert.equal(balance, 0, "Account B has been refunded 450. Wallet balance is now 0");
     });
 
+    it("[account c] should add funds to the contract", async () => {
+      await web3.eth.sendTransaction({gas: 150000, from: account_c, to: instance.address, value: 1000});
+      const balance = await instance.getBalance.call();
+      assert.equal(balance, 1000, "Contract has 1000 wei balance");
+    });
+
+    it("[account c] should fail to be removed by non-funder", async () => {
+      try {
+        await instance.removeFunder({from: account_b});
+        assert.equal(true, false);
+      } catch(err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[account c] should remove themselves as funder without refunding", async () => {
+      await instance.removeFunder({from: account_c});
+      const balance = await instance.getBalance.call();
+      assert.equal(balance, 1000, "Contract has 1000 wei balance");
+    });
+
     it("should get total funders as 0", async () => {
       const totalFunders = await instance.getCurrentTotalFunders.call();
       assert.equal(totalFunders, 0, "There are 0 total funders");
