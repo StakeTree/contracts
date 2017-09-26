@@ -77,6 +77,16 @@ contract('StakeTreeMVP', function(accounts) {
       }
     });
 
+    it("should fail sending below minimum funding amount", async () => { 
+      try {
+        const weiAmount = web3.toWei(0.001, 'ether');
+        await web3.eth.sendTransaction({from: account_a, to: instance.address, value: weiAmount});
+        assert.equal(true, false);
+      } catch(err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
     it("should change minimum funding amount back", async () => { 
       const weiAmount = web3.toWei(1, 'wei');
       await instance.setMinimumFundingAmount(weiAmount);

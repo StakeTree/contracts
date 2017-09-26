@@ -60,23 +60,23 @@ contract StakeTreeMVP {
   * Can only happen when live and over a minimum amount set by the beneficiary
   */
   function () payable onlyWhenLive {
-    if(msg.value > minimumFundingAmount){
-      // Only increase total funders when we have a new funder
-      if(balanceOf(msg.sender) == 0) {
-        totalCurrentFunders += 1; // Increase total funder count
+    require(msg.value > minimumFundingAmount);
+    
+    // Only increase total funders when we have a new funder
+    if(balanceOf(msg.sender) == 0) {
+      totalCurrentFunders += 1; // Increase total funder count
 
-        // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
-        funderCounter[msg.sender] = withdrawalCounter;
-        // Keep track of the initial balance for the funder
-        funderBalances[msg.sender] += msg.value;
-      }
-      else {
-        // If the funder is already in the pool let's update things while we're at it
-        // This calculates their actual balance left and adds their top up amount
-        funderBalances[msg.sender] = getRefundAmountForFunder(msg.sender) + msg.value;
-        // Reset withdrawal counter
-        funderCounter[msg.sender] = withdrawalCounter;
-      }
+      // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
+      funderCounter[msg.sender] = withdrawalCounter;
+      // Keep track of the initial balance for the funder
+      funderBalances[msg.sender] += msg.value;
+    }
+    else {
+      // If the funder is already in the pool let's update things while we're at it
+      // This calculates their actual balance left and adds their top up amount
+      funderBalances[msg.sender] = getRefundAmountForFunder(msg.sender) + msg.value;
+      // Reset withdrawal counter
+      funderCounter[msg.sender] = withdrawalCounter;
     }
   }
 
