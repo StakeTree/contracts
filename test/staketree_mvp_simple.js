@@ -122,7 +122,7 @@ contract('StakeTreeMVP', function(accounts) {
     });
 
     it("should get initial balance of contract", async () => {
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 0, "Contract initiated with 0 balance");
     });
 
@@ -144,12 +144,12 @@ contract('StakeTreeMVP', function(accounts) {
   describe('Account A unit testing', async () => {
     it("[account a] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance.address, value: 1000});
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 1000, "Contract has 1000 wei balance");
     });
 
     it("[account a] should show funds of funder", async () => {
-      const balance = await instance.balanceOf.call(account_a);
+      const balance = await instance.getFunderBalance.call(account_a);
       assert.equal(balance, 1000, "Account A has 1000 wei balance");
     });
 
@@ -160,12 +160,12 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[account a] should add more funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance.address, value: 1000});
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 2000, "Contract has 2000 wei balance");
     });
 
     it("[account a] should show funds of funder increased", async () => {
-      const balance = await instance.balanceOf.call(account_a);
+      const balance = await instance.getFunderBalance.call(account_a);
       assert.equal(balance, 2000, "Account A has 2000 wei balance");
     });
 
@@ -187,12 +187,12 @@ contract('StakeTreeMVP', function(accounts) {
   describe('Add account b integration testing', async () => {
     it("[account b] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 100000, from: account_b, to: instance.address, value: 500});
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 2500, "Contract has 2500 wei balance");
     });
 
     it("[account b] should show funds of funder", async () => {
-      const balance = await instance.balanceOf.call(account_b);
+      const balance = await instance.getFunderBalance.call(account_b);
       assert.equal(balance, 500, "Account B has 500 wei balance");
     });
 
@@ -205,7 +205,7 @@ contract('StakeTreeMVP', function(accounts) {
   describe('Withdrawal testing', async () => {
     it("should withdraw to beneficiary", async () => {
       await instance.withdraw();
-      const balanceAfter = await instance.getBalance.call();
+      const balanceAfter = await instance.getContractBalance.call();
       assert.equal(balanceAfter, 2250, "Beneficiary has withdrawn 10%");
     });
 
@@ -236,7 +236,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[account a] should refund by funder", async () => {
       await instance.refund({from: account_a});
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 450, "Account A has been refunded 1800. Wallet balance is now 450");
     });
 
@@ -256,13 +256,13 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[account b] should refund by funder", async () => {
       await instance.refund({from: account_b});
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 0, "Account B has been refunded 450. Wallet balance is now 0");
     });
 
     it("[account c] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 150000, from: account_c, to: instance.address, value: 1000});
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 1000, "Contract has 1000 wei balance");
     });
 
@@ -277,7 +277,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[account c] should remove themselves as funder without refunding", async () => {
       await instance.removeFunder({from: account_c});
-      const balance = await instance.getBalance.call();
+      const balance = await instance.getContractBalance.call();
       assert.equal(balance, 1000, "Contract has 1000 wei balance");
     });
 
@@ -323,7 +323,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[instance 2] should add funds to the contract", async () => {
       await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance2.address, value: 1000});
-      const balance = await instance2.getBalance.call();
+      const balance = await instance2.getContractBalance.call();
       assert.equal(balance, 1000, "Contract has 1000 wei balance");
     });
 
@@ -362,7 +362,7 @@ contract('StakeTreeMVP', function(accounts) {
 
     it("[instance 2] should swipe contract", async () => {
       await instance2.swipe(account_a, {from: account_a});
-      const balance = await instance2.getBalance.call();
+      const balance = await instance2.getContractBalance.call();
       assert.equal(balance, 0, "Contract has been swiped by beneficiary");
     });
 

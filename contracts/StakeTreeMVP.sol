@@ -147,11 +147,11 @@ contract StakeTreeMVP {
     return funders[addr].withdrawalEntry;
   }
 
-  function getBalance() public constant returns (uint256 balance) {
+  function getContractBalance() public constant returns (uint256 balance) {
     balance = this.balance;
   }
 
-  function balanceOf(address funder) public constant returns (uint256) {
+  function getFunderBalance(address funder) public constant returns (uint256) {
     return getRefundAmountForFunder(funder);
   }
 
