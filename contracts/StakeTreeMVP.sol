@@ -1,6 +1,8 @@
 pragma solidity ^0.4.11;
+import './SafeMath.sol';
 
 contract StakeTreeMVP {
+  using SafeMath for uint256;
 
   struct Funder {
     bool exists;
@@ -84,7 +86,7 @@ contract StakeTreeMVP {
 
     // Only increase total funders when we have a new funder
     if(!isFunder(msg.sender)) {
-      totalCurrentFunders += 1; // Increase total funder count
+      totalCurrentFunders = totalCurrentFunders.add(1); // Increase total funder count
 
       funders[msg.sender] = Funder({
         exists: true,
@@ -95,7 +97,7 @@ contract StakeTreeMVP {
     else {
       // If the funder is already in the pool let's update things while we're at it
       // This calculates their actual balance left and adds their top up amount
-      funders[msg.sender].balance = getRefundAmountForFunder(msg.sender) + msg.value;
+      funders[msg.sender].balance = getRefundAmountForFunder(msg.sender).add(msg.value);
       // Reset withdrawal counter
       funders[msg.sender].withdrawalEntry = withdrawalCounter;
     }
@@ -103,13 +105,32 @@ contract StakeTreeMVP {
 
   // Pure functions
   function calculateWithdrawalAmount(uint startAmount) returns (uint){
-    uint bigNumber = startAmount*decimalMultiplier;
-    uint bigWithdrawalAmount = bigNumber/100*10;
-    uint withdrawalAmount = bigWithdrawalAmount/decimalMultiplier;
+    uint bigNumber = startAmount.mul(decimalMultiplier);
+    uint bigWithdrawalAmount = bigNumber.div(100).mul(10); // Gets 10%
+    uint withdrawalAmount = bigWithdrawalAmount.div(decimalMultiplier);
     return withdrawalAmount;
   }
 
   // Getter functions
+
+  /*
+  * To calculate the refund amount we look at how many times the beneficiary
+  * has withdrawn since the funder added their funds. 
+  * We use that deduct 10% for each withdrawal.
+  */
+
+  function getRefundAmountForFunder(address addr) constant returns (uint) {
+    uint amount = funders[addr].balance;
+    uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
+    uint bigNumberAmount = amount.mul(decimalMultiplier);
+    
+    for(uint i=0; i<withdrawalTimes; i++) {
+      bigNumberAmount = bigNumberAmount.sub(bigNumberAmount.div(100).mul(10));
+    }
+
+    return bigNumberAmount.div(decimalMultiplier);
+  }
+
   function getBeneficiary() constant returns (address) {
     return beneficiary;
   }
@@ -126,24 +147,6 @@ contract StakeTreeMVP {
     return funders[addr].withdrawalEntry;
   }
 
-  /*
-  * To calculate the refund amount we look at how many times the beneficiary
-  * has withdrawn since the funder added their funds. 
-  * We use that deduct 10% for each withdrawal.
-  */
-
-  function getRefundAmountForFunder(address addr) constant returns (uint) {
-    uint amount = funders[addr].balance;
-    uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
-    uint bigNumberAmount = amount*decimalMultiplier;
-    
-    for(uint i=0; i<withdrawalTimes; i++) {
-      bigNumberAmount = bigNumberAmount-(bigNumberAmount/100*10);
-    }
-
-    return bigNumberAmount/decimalMultiplier;
-  }
-
   function getBalance() constant returns (uint256 balance) {
     balance = this.balance;
   }
@@ -153,7 +156,7 @@ contract StakeTreeMVP {
   }
 
   function getHowManyWithdrawalsForFunder(address addr) constant returns (uint) {
-    return withdrawalCounter - getWithdrawalEntryForFunder(addr);
+    return withdrawalCounter.sub(getWithdrawalEntryForFunder(addr));
   }
 
   function isFunder(address addr) constant returns (bool) {
@@ -176,7 +179,7 @@ contract StakeTreeMVP {
     uint amount = calculateWithdrawalAmount(this.balance);
 
     // Effects
-    withdrawalCounter += 1;
+    withdrawalCounter = withdrawalCounter.add(1);
     setNextWithdrawalTime(now);
 
     // Interaction
@@ -207,7 +210,7 @@ contract StakeTreeMVP {
   // without refunding. Their eth stays in the pool
   function removeFunder() onlyByFunder {
     delete funders[msg.sender];
-    totalCurrentFunders -= 1;
+    totalCurrentFunders = totalCurrentFunders.sub(1);
   }
 
   /*
@@ -218,7 +221,7 @@ contract StakeTreeMVP {
   */
 
   function sunset() onlyByBeneficiary {
-    sunsetWithdrawDate = now + sunsetWithdrawalPeriod;
+    sunsetWithdrawDate = now.add(sunsetWithdrawalPeriod);
     live = false;
   }
 
