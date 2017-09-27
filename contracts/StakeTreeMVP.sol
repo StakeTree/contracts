@@ -12,8 +12,8 @@ contract StakeTreeMVP {
   mapping(address => Funder) public funders;
 
   bool public live = true; // For sunsetting contract
-  uint totalCurrentFunders = 0; // Keeps track of total funders
-  uint withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
+  uint public totalCurrentFunders = 0; // Keeps track of total funders
+  uint public withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
  
   address public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
@@ -81,7 +81,7 @@ contract StakeTreeMVP {
   * Can only happen when live and over a minimum amount set by the beneficiary
   */
 
-  function fund() payable onlyWhenLive {
+  function fund() public payable onlyWhenLive {
     require(msg.value > minimumFundingAmount);
 
     // Only increase total funders when we have a new funder
@@ -104,7 +104,7 @@ contract StakeTreeMVP {
   }
 
   // Pure functions
-  function calculateWithdrawalAmount(uint startAmount) returns (uint){
+  function calculateWithdrawalAmount(uint startAmount) public returns (uint){
     uint bigNumber = startAmount.mul(decimalMultiplier);
     uint bigWithdrawalAmount = bigNumber.div(100).mul(10); // Gets 10%
     uint withdrawalAmount = bigWithdrawalAmount.div(decimalMultiplier);
@@ -119,7 +119,7 @@ contract StakeTreeMVP {
   * We use that deduct 10% for each withdrawal.
   */
 
-  function getRefundAmountForFunder(address addr) constant returns (uint) {
+  function getRefundAmountForFunder(address addr) public constant returns (uint) {
     uint amount = funders[addr].balance;
     uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
     uint bigNumberAmount = amount.mul(decimalMultiplier);
@@ -131,56 +131,52 @@ contract StakeTreeMVP {
     return bigNumberAmount.div(decimalMultiplier);
   }
 
-  function getBeneficiary() constant returns (address) {
+  function getBeneficiary() public constant returns (address) {
     return beneficiary;
   }
 
-  function getCurrentTotalFunders() constant returns (uint) {
+  function getCurrentTotalFunders() public constant returns (uint) {
     return totalCurrentFunders;
   }
 
-  function getWithdrawalCounter() constant returns (uint) {
+  function getWithdrawalCounter() public constant returns (uint) {
     return withdrawalCounter;
   }
 
-  function getWithdrawalEntryForFunder(address addr) constant returns (uint) {
+  function getWithdrawalEntryForFunder(address addr) public constant returns (uint) {
     return funders[addr].withdrawalEntry;
   }
 
-  function getBalance() constant returns (uint256 balance) {
+  function getBalance() public constant returns (uint256 balance) {
     balance = this.balance;
   }
 
-  function balanceOf(address funder) constant returns (uint256) {
+  function balanceOf(address funder) public constant returns (uint256) {
     return getRefundAmountForFunder(funder);
   }
 
-  function getHowManyWithdrawalsForFunder(address addr) constant returns (uint) {
-    return withdrawalCounter.sub(getWithdrawalEntryForFunder(addr));
-  }
-
-  function isFunder(address addr) constant returns (bool) {
+  function isFunder(address addr) public constant returns (bool) {
     return funders[addr].exists;
   }
 
-  // State changing functions
-  function setNextWithdrawalTime(uint timestamp) private {
-    lastWithdrawal = timestamp; // For tracking purposes
-    nextWithdrawal = nextWithdrawal + withdrawalPeriod; // Fixed period increase
+  function getHowManyWithdrawalsForFunder(address addr) private constant returns (uint) {
+    return withdrawalCounter.sub(getWithdrawalEntryForFunder(addr));
   }
 
-  function setMinimumFundingAmount(uint amount) onlyByBeneficiary {
+  // State changing functions
+  function setMinimumFundingAmount(uint amount) external onlyByBeneficiary {
     require(amount > 0);
     minimumFundingAmount = amount;
   }
 
-  function withdraw() onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive  {
+  function withdraw() external onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive  {
     // Check
     uint amount = calculateWithdrawalAmount(this.balance);
 
     // Effects
     withdrawalCounter = withdrawalCounter.add(1);
-    setNextWithdrawalTime(now);
+    lastWithdrawal = now; // For tracking purposes
+    nextWithdrawal = nextWithdrawal + withdrawalPeriod; // Fixed period increase
 
     // Interaction
     beneficiary.transfer(amount);
@@ -190,7 +186,7 @@ contract StakeTreeMVP {
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
   // We also remove the funder if they succesfully exit with their funds
-  function refund() onlyByFunder {
+  function refund() external onlyByFunder {
     // Check
     uint walletBalance = this.balance;
     uint amount = getRefundAmountForFunder(msg.sender);
@@ -208,7 +204,7 @@ contract StakeTreeMVP {
 
   // Used when the funder wants to remove themselves as a funder
   // without refunding. Their eth stays in the pool
-  function removeFunder() onlyByFunder {
+  function removeFunder() public onlyByFunder {
     delete funders[msg.sender];
     totalCurrentFunders = totalCurrentFunders.sub(1);
   }
@@ -220,12 +216,12 @@ contract StakeTreeMVP {
   * if funders have not withdrawn their funds.
   */
 
-  function sunset() onlyByBeneficiary {
+  function sunset() external onlyByBeneficiary {
     sunsetWithdrawDate = now.add(sunsetWithdrawalPeriod);
     live = false;
   }
 
-  function swipe(address recipient) onlyWhenSunset onlyByBeneficiary {
+  function swipe(address recipient) external onlyWhenSunset onlyByBeneficiary {
     require(now >= sunsetWithdrawDate);
 
     recipient.transfer(this.balance);

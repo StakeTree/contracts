@@ -1,7 +1,6 @@
 var StakeTreeMVP = artifacts.require("./StakeTreeMVP.sol");
 
 const ERROR_INVALID_OPCODE = 'VM Exception while processing transaction: invalid opcode';
-const ERROR_SETNEXTWITHDRAWAL_PRIVATE = 'instance.setNextWithdrawalTime is not a function';
 
 contract('StakeTreeMVP', function(accounts) {
   let instance;
