@@ -122,13 +122,7 @@ contract StakeTreeMVP {
   function getRefundAmountForFunder(address addr) public constant returns (uint) {
     uint amount = funders[addr].balance;
     uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
-    uint bigNumberAmount = amount.mul(decimalMultiplier);
-    
-    for(uint i=0; i<withdrawalTimes; i++) {
-      bigNumberAmount = bigNumberAmount.sub(bigNumberAmount.div(100).mul(10));
-    }
-
-    return bigNumberAmount.div(decimalMultiplier);
+    return amount.mul(9 ** withdrawalTimes).div(10 ** withdrawalTimes);
   }
 
   function getBeneficiary() public constant returns (address) {
