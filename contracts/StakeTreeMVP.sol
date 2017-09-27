@@ -24,8 +24,6 @@ contract StakeTreeMVP {
 
   uint public sunsetWithdrawDate;
 
-  uint public decimalMultiplier = 1000000000; // For maths
-
   function StakeTreeMVP(
     address beneficiaryAddress, 
     uint withdrawalPeriodInit, 
@@ -104,11 +102,17 @@ contract StakeTreeMVP {
   }
 
   // Pure functions
+
+  /*
+  * This function calculates how much the beneficiary can withdraw.
+  * Due to no floating points in Solidity, we will lose some fidelity
+  * if there's wei on the last digit. The beneficiary loses a neglibible amount
+  * to withdraw but this benefits the beneficiary again on later withdrawals.
+  * We multiply by 10 (which corresponds to the 10%) 
+  * then divide by 100 to get the actual part.
+  */
   function calculateWithdrawalAmount(uint startAmount) public returns (uint){
-    uint bigNumber = startAmount.mul(decimalMultiplier);
-    uint bigWithdrawalAmount = bigNumber.div(100).mul(10); // Gets 10%
-    uint withdrawalAmount = bigWithdrawalAmount.div(decimalMultiplier);
-    return withdrawalAmount;
+    return startAmount.mul(10).div(100); // 10%
   }
 
   // Getter functions
