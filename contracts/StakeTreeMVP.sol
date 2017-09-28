@@ -80,7 +80,7 @@ contract StakeTreeMVP {
   */
 
   function fund() public payable onlyWhenLive {
-    require(msg.value > minimumFundingAmount);
+    require(msg.value >= minimumFundingAmount);
 
     // Only increase total funders when we have a new funder
     if(!isFunder(msg.sender)) {
@@ -214,7 +214,7 @@ contract StakeTreeMVP {
   * if funders have not withdrawn their funds.
   */
 
-  function sunset() external onlyByBeneficiary {
+  function sunset() external onlyByBeneficiary onlyWhenLive {
     sunsetWithdrawDate = now.add(sunsetWithdrawalPeriod);
     live = false;
   }

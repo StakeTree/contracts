@@ -304,6 +304,15 @@ contract('StakeTreeMVP', function(accounts) {
       assert.equal(isLive, false, "Contract has been put in sunset mode");
     });
 
+    it("[instance 1] should fail calling sunset again", async () => {
+      try {
+        await instance.sunset({from: account_a});
+        assert.equal(true, false);
+      } catch(err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }      
+    });
+
     it("[instance 1] should fail swiping", async () => {
       try {
         await instance.swipe(account_a, {from: account_a});
