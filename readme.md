@@ -26,7 +26,7 @@ uint minimumFundingAmountInit
 * `minimumFundingAmountInit` - The minimum amount in wei that funders can contribute at a time. Suggested amount 0.01 ether or 10000000000000000 wei.
 
 ### Funding contract
-Funders send ether to the contract address.
+Funders can send ether to the contract address using external accounts. For contracts, there's a `fund()` function which takes care of the same functionality but provides more gas that the fallback function can't.
 ### Withdrawing to beneficiary
 The beneficiary needs to call the `withdraw()` function from their beneficiary account.
 ### Refunding funders
