@@ -67,6 +67,8 @@ contract StakeTreeMVP {
     _;
   }
 
+  event LogNumber(uint number);
+
   /*
   * External accounts can pay directly to contract to fund it.
   */
@@ -115,6 +117,19 @@ contract StakeTreeMVP {
     return startAmount.mul(10).div(100); // 10%
   }
 
+  /*
+  * This function calculates the refund amount for the funder.
+  * Due to no floating points in Solidity, we will lose some fidelity.
+  * The funder loses a neglibible amount to refund. 
+  * The left over wei gets pooled to the fund.
+  */
+  function calculateRefundAmount(uint amount, uint withdrawalTimes) public returns (uint) {    
+    for(uint i=0; i<withdrawalTimes; i++){
+      amount = amount.mul(9).div(10);
+    }
+    return amount;
+  }
+
   // Getter functions
 
   /*
@@ -126,7 +141,7 @@ contract StakeTreeMVP {
   function getRefundAmountForFunder(address addr) public constant returns (uint) {
     uint amount = funders[addr].balance;
     uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
-    return amount.mul(9 ** withdrawalTimes).div(10 ** withdrawalTimes);
+    return calculateRefundAmount(amount, withdrawalTimes);
   }
 
   function getBeneficiary() public constant returns (address) {
