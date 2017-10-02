@@ -67,8 +67,6 @@ contract StakeTreeMVP {
     _;
   }
 
-  event LogNumber(uint number);
-
   /*
   * External accounts can pay directly to contract to fund it.
   */
