@@ -4,6 +4,8 @@ import './SafeMath.sol';
 contract StakeTreeMVP {
   using SafeMath for uint256;
 
+  uint public version = 1;
+
   struct Funder {
     bool exists;
     uint balance;
@@ -14,6 +16,7 @@ contract StakeTreeMVP {
   bool public live = true; // For sunsetting contract
   uint public totalCurrentFunders = 0; // Keeps track of total funders
   uint public withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
+  uint public sunsetWithdrawDate;
  
   address public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
@@ -22,7 +25,7 @@ contract StakeTreeMVP {
   uint public lastWithdrawal; // Last withdrawal time
   uint public nextWithdrawal; // Next withdrawal time
 
-  uint public sunsetWithdrawDate;
+  uint public contractStartTime; // For accounting purposes
 
   function StakeTreeMVP(
     address beneficiaryAddress, 
@@ -39,6 +42,8 @@ contract StakeTreeMVP {
     nextWithdrawal = lastWithdrawal + withdrawalPeriod;
 
     minimumFundingAmount = minimumFundingAmountInit;
+
+    contractStartTime = now;
   }
 
   // Modifiers
