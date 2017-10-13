@@ -1,8 +1,8 @@
 {
   "name": "staketree-contracts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "ABIs for StakeTree Contracts",
-  "dependencies": {
+  "devDependencies": {
     "truffle-hdwallet-provider": "0.0.3"
   }
 }
