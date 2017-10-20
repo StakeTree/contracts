@@ -3,15 +3,14 @@ const config = require('./localConfig.js');
 
 const mnemonic = config.mnemonic;
 
-const localEngine = new HDWalletProvider(mnemonic, "http://localhost:8545");
 const rinkebyEngine = new HDWalletProvider(mnemonic, "https://rinkeby.infura.io");
 const mainnetEngine = new HDWalletProvider(mnemonic, "https://mainnet.infura.io");
 
 module.exports = {
   networks: {
     development: {
-      provider: localEngine,
-      address: localEngine.getAddress(),
+      host: "localhost",
+      port: 8545,
       network_id: "*" // Match any network id
     },
     mainnet: {
