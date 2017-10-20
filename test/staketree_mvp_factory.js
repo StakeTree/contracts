@@ -7,8 +7,6 @@ contract('StakeTreeMVPFactory', function(accounts) {
   let instance;
 
   const account_a = accounts[0]; // Beneficiary
-  const account_b = accounts[1];
-  const account_c = accounts[2];
 
   const nowUnix = new Date().getTime()/1000;
   const nowParsed = parseInt(nowUnix.toFixed(0), 10);
@@ -42,7 +40,7 @@ contract('StakeTreeMVPFactory', function(accounts) {
       );
 
       const contractAddress = await instance.getContractAddress.call({from: account_a});
-      const newInstance = await StakeTreeMVP.at(contractAddress);
+      const newInstance = await StakeTreeMVP.at(contractAddress[0]);
       const beneficiaryAddress = await newInstance.getBeneficiary.call();
 
       assert.equal(beneficiaryAddress, account_a, "Contract has been deployed");
@@ -51,6 +49,28 @@ contract('StakeTreeMVPFactory', function(accounts) {
     it("should have 1 contract deployed", async () => {
       const count = await instance.contractCount.call();
       assert.equal(count, 1, "One contract should have been deployed");
+    });
+
+    it("should verify beneficiary address during next deploy", async () => {
+      await instance.newContract(
+        "0x46d8ceed94ce7583cdee1e7e54e60bf38fa41dfc",
+        config.withdrawalPeriod, 
+        config.startTime, 
+        config.sunsetWithdrawalPeriod,
+        config.minimumFundingAmount,
+        {from: account_a}
+      );
+
+      const contractAddress = await instance.getContractAddress.call({from: account_a});
+      const newInstance = await StakeTreeMVP.at(contractAddress[1]);
+      const beneficiaryAddress = await newInstance.getBeneficiary.call();
+
+      assert.equal(beneficiaryAddress, "0x46d8ceed94ce7583cdee1e7e54e60bf38fa41dfc", "2nd contract has been deployed");
+    });
+
+    it("should have 2 contracts deployed", async () => {
+      const count = await instance.contractCount.call();
+      assert.equal(count, 2, "Two contracts should have been deployed");
     });
   });
 });

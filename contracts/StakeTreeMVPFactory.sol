@@ -3,7 +3,7 @@ import './StakeTreeMVP.sol';
 
 contract StakeTreeMVPFactory {
   uint public contractCount;
-  mapping(address => address) public contracts;
+  mapping(address => address[]) public contracts;
 
   function newContract(
     address beneficiaryAddress, 
@@ -20,13 +20,13 @@ contract StakeTreeMVPFactory {
       minimumFundingAmountInit
     );
 
-    contracts[msg.sender] = mvp;
+    contracts[msg.sender].push(mvp);
     contractCount += 1;
 
     return mvp;
   }
 
-  function getContractAddress() public returns (address) {
+  function getContractAddress() public constant returns (address[]) {
     return contracts[msg.sender];
   }
 }
