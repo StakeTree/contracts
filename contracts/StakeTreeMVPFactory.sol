@@ -26,7 +26,7 @@ contract StakeTreeMVPFactory {
     return mvp;
   }
 
-  function getContractAddress() returns (address) {
+  function getContractAddress() public returns (address) {
     return contracts[msg.sender];
   }
 }
