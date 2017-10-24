@@ -1,0 +1,515 @@
+{
+  "contract_name": "StakeTreeWithTokenization",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "sunset",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "funders",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        },
+        {
+          "name": "balance",
+          "type": "uint256"
+        },
+        {
+          "name": "withdrawalEntry",
+          "type": "uint256"
+        },
+        {
+          "name": "contribution",
+          "type": "uint256"
+        },
+        {
+          "name": "contributionClaimed",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "contractStartTime",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "startAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "calculateWithdrawalAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "lastWithdrawal",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "addr",
+          "type": "address"
+        }
+      ],
+      "name": "isFunder",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "withdrawalCounter",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMinimumFundingAmount",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getWithdrawalCounter",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "beneficiary",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "sunsetWithdrawalPeriod",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "withdraw",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "version",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "tokenContract",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getBeneficiary",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getCurrentTotalFunders",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "refund",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getContractBalance",
+      "outputs": [
+        {
+          "name": "balance",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "minimumFundingAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "addr",
+          "type": "address"
+        }
+      ],
+      "name": "getRefundAmountForFunder",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "funder",
+          "type": "address"
+        }
+      ],
+      "name": "consolidateFunderViaTokenContract",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "addr",
+          "type": "address"
+        }
+      ],
+      "name": "getWithdrawalEntryForFunder",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "live",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "totalCurrentFunders",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "fund",
+      "outputs": [],
+      "payable": true,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "nextWithdrawal",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "funder",
+          "type": "address"
+        }
+      ],
+      "name": "getFunderBalance",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "addr",
+          "type": "address"
+        }
+      ],
+      "name": "setTokenContract",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "withdrawalPeriod",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "funder",
+          "type": "address"
+        },
+        {
+          "name": "amountClaimed",
+          "type": "uint256"
+        }
+      ],
+      "name": "updatecontributionClaimed",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "recipient",
+          "type": "address"
+        }
+      ],
+      "name": "swipe",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "removeFunder",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "withdrawalTimes",
+          "type": "uint256"
+        }
+      ],
+      "name": "calculateRefundAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "sunsetWithdrawDate",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "beneficiaryAddress",
+          "type": "address"
+        },
+        {
+          "name": "withdrawalPeriodInit",
+          "type": "uint256"
+        },
+        {
+          "name": "withdrawalStart",
+          "type": "uint256"
+        },
+        {
+          "name": "sunsetWithdrawPeriodInit",
+          "type": "uint256"
+        },
+        {
+          "name": "minimumFundingAmountInit",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "constructor"
+    },
+    {
+      "payable": true,
+      "type": "fallback"
+    }
+  ],
+  "unlinked_binary": "0x6060604052600160008181556002805460ff19169092179091556003819055600455341561002c57600080fd5b60405160a080610f5583398101604052808051919060200180519190602001805191906020018051919060200180519150505b60078054600160a060020a031916600160a060020a03871617905560098490556008829055600b839055828401600c55600a81905542600d555b50505050505b610ea7806100ae6000396000f300606060405236156101a95763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663026164ad81146101b5578063031b3677146101ca5780630c3d51571461021c5780630e1a0399146102415780631dd300ce146102695780631ea488701461028e57806320d786b5146102c157806334caa999146102e657806337ea1f63146102fe57806338af3eed1461032357806339b8dc40146103525780633ccfd60b1461037757806354fd4d501461038c57806355a373d6146103b1578063565a2e2c146103e05780635896521b1461040f578063590e1ae3146104345780636f9fb98a14610449578063783c8db01461046e57806383c28ddc14610493578063911ea1fa146104c4578063930c0bba146104e5578063957aa58c14610516578063962ffeae1461053d578063b60d4288146101a9578063b7e9f1931461056c578063b8b3d85b14610591578063bbcd5bbe146105c2578063bca7093d146105e3578063c1c729ae14610608578063cce7db581461062c578063cfd32aa01461064d578063d3d5549314610662578063fa2e9db81461068d575b5b6101b26106b2565b5b005b34156101c057600080fd5b6101b2610787565b005b34156101d557600080fd5b6101e9600160a060020a03600435166107d9565b604051941515855260208501939093526040808501929092526060840152608083019190915260a0909101905180910390f35b341561022757600080fd5b61022f61080d565b60405190815260200160405180910390f35b341561024c57600080fd5b61022f600435610813565b60405190815260200160405180910390f35b341561027457600080fd5b61022f61083f565b60405190815260200160405180910390f35b341561029957600080fd5b6102ad600160a060020a0360043516610845565b604051901515815260200160405180910390f35b34156102cc57600080fd5b61022f610867565b60405190815260200160405180910390f35b34156102f157600080fd5b6101b260043561086d565b005b341561030957600080fd5b61022f61089f565b60405190815260200160405180910390f35b341561032e57600080fd5b6103366108a6565b604051600160a060020a03909116815260200160405180910390f35b341561035d57600080fd5b61022f6108b5565b60405190815260200160405180910390f35b341561038257600080fd5b6101b26108bb565b005b341561039757600080fd5b61022f610970565b60405190815260200160405180910390f35b34156103bc57600080fd5b610336610976565b604051600160a060020a03909116815260200160405180910390f35b34156103eb57600080fd5b610336610985565b604051600160a060020a03909116815260200160405180910390f35b341561041a57600080fd5b61022f610995565b60405190815260200160405180910390f35b341561043f57600080fd5b6101b261099c565b005b341561045457600080fd5b61022f610a2c565b60405190815260200160405180910390f35b341561047957600080fd5b61022f610a3b565b60405190815260200160405180910390f35b341561049e57600080fd5b61022f600160a060020a0360043516610a41565b60405190815260200160405180910390f35b34156104cf57600080fd5b6101b2600160a060020a0360043516610a7d565b005b34156104f057600080fd5b61022f600160a060020a0360043516610aa8565b60405190815260200160405180910390f35b341561052157600080fd5b6102ad610aca565b604051901515815260200160405180910390f35b341561054857600080fd5b61022f610ad3565b60405190815260200160405180910390f35b6101b26106b2565b005b341561057757600080fd5b61022f610ad9565b60405190815260200160405180910390f35b341561059c57600080fd5b61022f600160a060020a0360043516610adf565b60405190815260200160405180910390f35b34156105cd57600080fd5b6101b2600160a060020a0360043516610af2565b005b34156105ee57600080fd5b61022f610b3a565b60405190815260200160405180910390f35b341561061357600080fd5b6101b2600160a060020a0360043516602435610b40565b005b341561063757600080fd5b6101b2600160a060020a0360043516610ba9565b005b341561065857600080fd5b6101b2610c26565b005b341561066d57600080fd5b61022f600435602435610c92565b60405190815260200160405180910390f35b341561069857600080fd5b61022f610cd6565b60405190815260200160405180910390f35b60025460ff1615156106c357600080fd5b600a543410156106d257600080fd5b6106db33610845565b1515610778576003546106f590600163ffffffff610cdc16565b60035560a060405190810160409081526001808352346020808501919091526004548385015260006060850181905260808501819052600160a060020a0333168152919052208151815460ff1916901515178155602082015181600101556040820151816002015560608201518160030155608082015160049091015550610782565b6107823334610cf6565b5b5b5b565b60075433600160a060020a039081169116146107a257600080fd5b60025460ff1615156107b357600080fd5b6008546107c790429063ffffffff610cdc16565b6005556002805460ff191690555b5b5b565b60016020819052600091825260409091208054918101546002820154600383015460049093015460ff909416939192909185565b600d5481565b6000610837606461082b84600a63ffffffff610df416565b9063ffffffff610e2316565b90505b919050565b600b5481565b600160a060020a03811660009081526001602052604090205460ff165b919050565b60045481565b60075433600160a060020a0390811691161461088857600080fd5b6000811161089557600080fd5b600a8190555b5b50565b6004545b90565b600754600160a060020a031681565b60085481565b60075460009033600160a060020a039081169116146108d957600080fd5b600c544210156108e857600080fd5b60025460ff1615156108f957600080fd5b61090c30600160a060020a031631610813565b60045490915061092390600163ffffffff610cdc16565b60045542600b55600954600c80549091019055600754600160a060020a031681156108fc0282604051600060405180830381858888f19350505050151561089b57600080fd5b5b5b5b5b50565b60005481565b600654600160a060020a031681565b600754600160a060020a03165b90565b6003545b90565b6000806109a833610845565b15156109b357600080fd5b30600160a060020a03163191506109c933610a41565b9050600081116109d857600080fd5b6109e0610c26565b600160a060020a03331681156108fc0282604051600060405180830381858888f193505050501515610a1157600080fd5b600160a060020a0330163181830314610a2657fe5b5b5b5050565b600160a060020a033016315b90565b600a5481565b600160a060020a03811660009081526001602081905260408220015481610a6784610e3f565b9050610a738282610c92565b92505b5050919050565b60065433600160a060020a03908116911614610a9857600080fd5b61089b816000610cf6565b5b5b50565b600160a060020a0381166000908152600160205260409020600201545b919050565b60025460ff1681565b60035481565b600c5481565b600061083782610a41565b90505b919050565b60065433600160a060020a03908116911614610b0d57600080fd5b6006805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0383161790555b5b50565b60095481565b60065433600160a060020a03908116911614610b5b57600080fd5b600160a060020a038216600090815260016020526040902060040154610b87908263ffffffff610cdc16565b600160a060020a0383166000908152600160205260409020600401555b5b5050565b60025460ff1615610bb957600080fd5b60075433600160a060020a03908116911614610bd457600080fd5b600554421015610be357600080fd5b80600160a060020a03166108fc30600160a060020a0316319081150290604051600060405180830381858888f19350505050151561089b57600080fd5b5b5b5b50565b610c2f33610845565b1515610c3a57600080fd5b600160a060020a03331660009081526001602081905260408220805460ff191681558082018390556002810183905560038082018490556004909101929092559054610c8b9163ffffffff610e6416565b6003555b5b565b6000805b82811015610ccb57610cc0600a61082b86600963ffffffff610df416565b9063ffffffff610e2316565b93505b600101610c96565b8391505b5092915050565b60055481565b600082820183811015610ceb57fe5b8091505b5092915050565b600454600160a060020a038316600090815260016020526040812060020154909182918291901015610dec57600160a060020a038516600090815260016020819052604090912001549250610d4a85610a41565b915082821015610db057610d64838363ffffffff610e6416565b600160a060020a038616600090815260016020526040902060030154909150610d93908263ffffffff610cdc16565b600160a060020a0386166000908152600160205260409020600301555b610dc0828563ffffffff610cdc16565b600160a060020a0386166000908152600160208190526040909120908101919091556004546002909101555b5b5050505050565b6000828202831580610e105750828482811515610e0d57fe5b04145b1515610ceb57fe5b8091505b5092915050565b6000808284811515610e3157fe5b0490508091505b5092915050565b6000610837610e4d83610aa8565b6004549063ffffffff610e6416565b90505b919050565b600082821115610e7057fe5b508082035b929150505600a165627a7a723058203690873c3a88791952bbf50ff1d2e77a5c7631a48c7690cace81943003dd61780029",
+  "networks": {},
+  "schema_version": "0.0.5",
+  "updated_at": 1508857062163
+}

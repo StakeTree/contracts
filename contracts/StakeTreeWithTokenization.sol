@@ -1,7 +1,7 @@
 pragma solidity ^0.4.11;
 import './SafeMath.sol';
 
-contract StakeTreeMVP {
+contract StakeTreeWithTokenization {
   using SafeMath for uint256;
 
   uint public version = 1;
@@ -10,13 +10,17 @@ contract StakeTreeMVP {
     bool exists;
     uint balance;
     uint withdrawalEntry;
+    uint contribution;
+    uint contributionClaimed;
   }
+
   mapping(address => Funder) public funders;
 
   bool public live = true; // For sunsetting contract
   uint public totalCurrentFunders = 0; // Keeps track of total funders
   uint public withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
   uint public sunsetWithdrawDate;
+  address public tokenContract;
  
   address public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
@@ -27,7 +31,7 @@ contract StakeTreeMVP {
 
   uint public contractStartTime; // For accounting purposes
 
-  function StakeTreeMVP(
+  function StakeTreeWithTokenization(
     address beneficiaryAddress, 
     uint withdrawalPeriodInit, 
     uint withdrawalStart, 
@@ -49,6 +53,11 @@ contract StakeTreeMVP {
   // Modifiers
   modifier onlyByBeneficiary() {
     require(msg.sender == beneficiary);
+    _;
+  }
+
+  modifier onlyByTokenContract() {
+    require(msg.sender == tokenContract);
     _;
   }
 
@@ -94,15 +103,13 @@ contract StakeTreeMVP {
       funders[msg.sender] = Funder({
         exists: true,
         balance: msg.value,
-        withdrawalEntry: withdrawalCounter // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
+        withdrawalEntry: withdrawalCounter, // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
+        contribution: 0,
+        contributionClaimed: 0
       });
     }
-    else {
-      // If the funder is already in the pool let's update things while we're at it
-      // This calculates their actual balance left and adds their top up amount
-      funders[msg.sender].balance = getRefundAmountForFunder(msg.sender).add(msg.value);
-      // Reset withdrawal counter
-      funders[msg.sender].withdrawalEntry = withdrawalCounter;
+    else { 
+      consolidateFunder(msg.sender, msg.value);
     }
   }
 
@@ -225,6 +232,54 @@ contract StakeTreeMVP {
     totalCurrentFunders = totalCurrentFunders.sub(1);
   }
 
+  /*
+  * This is a bookkeeping function which updates the state for the funder 
+  * after withdrawals has occurred. This can only be called by the token contract
+  */
+
+  function consolidateFunderViaTokenContract(address funder) external onlyByTokenContract {
+    if(funders[funder].withdrawalEntry < withdrawalCounter) {
+      consolidateFunder(funder, 0); // No new payment is added here. So amount is zero
+    }
+  }
+
+  function consolidateFunder(address funder, uint newPayment) private {
+    // Only consolidate funder if there's been a withdrawal 
+    // since the funder entered the contract
+    uint oldBalance = funders[funder].balance;
+    uint newBalance = getRefundAmountForFunder(funder);
+
+    // Increase contribution
+    if(newBalance < oldBalance) {
+      uint contribution = oldBalance.sub(newBalance);
+      funders[funder].contribution = funders[funder].contribution.add(contribution);
+    }
+
+    // Update balance
+    funders[funder].balance = newBalance.add(newPayment);
+    // Update withdrawal entry
+    funders[funder].withdrawalEntry = withdrawalCounter;
+  }
+
+  /*
+  * This function can only be called by the token contract.
+  * This updates the amount of tokens the funder has claimed.
+  */
+
+  function updatecontributionClaimed(address funder, uint amountClaimed) external onlyByTokenContract {
+    funders[funder].contributionClaimed = funders[funder].contributionClaimed.add(amountClaimed);
+  }
+
+  /*
+  * TODO: Who must be able to call this? In what cases would this be updated?
+  * This sets the contract address.
+  */
+
+  function setTokenContract(address addr) external onlyByTokenContract {
+    tokenContract = addr;
+  }
+
+  /* --- Sunsetting --- */
   /*
   * The beneficiary can decide to stop using this contract.
   * They use this sunset function to put it into sunset mode.
