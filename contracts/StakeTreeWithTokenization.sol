@@ -234,14 +234,8 @@ contract StakeTreeWithTokenization {
 
   /*
   * This is a bookkeeping function which updates the state for the funder 
-  * after withdrawals has occurred. This can only be called by the token contract
+  * after withdrawals has occurred.
   */
-
-  function consolidateFunderViaTokenContract(address funder) external onlyByTokenContract {
-    if(funders[funder].withdrawalEntry < withdrawalCounter) {
-      consolidateFunder(funder, 0); // No new payment is added here. So amount is zero
-    }
-  }
 
   function consolidateFunder(address funder, uint newPayment) private {
     // Only consolidate funder if there's been a withdrawal 
@@ -262,11 +256,26 @@ contract StakeTreeWithTokenization {
   }
 
   /*
+  * This can only be called by token contract
+  * To consolidate state before claiming tokens. 
+  */
+
+  function consolidateFunderViaTokenContract(address funder) external onlyByTokenContract {
+    require(isFunder(funder));
+    
+    if(funders[funder].withdrawalEntry < withdrawalCounter) {
+      consolidateFunder(funder, 0); // No new payment is added here. So amount is zero
+    }
+  }
+
+  /*
   * This function can only be called by the token contract.
   * This updates the amount of tokens the funder has claimed.
   */
 
   function updatecontributionClaimed(address funder, uint amountClaimed) external onlyByTokenContract {
+    require(isFunder(funder));
+
     funders[funder].contributionClaimed = funders[funder].contributionClaimed.add(amountClaimed);
   }
 
