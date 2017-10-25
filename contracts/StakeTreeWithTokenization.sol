@@ -1,5 +1,6 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.18;
 import './SafeMath.sol';
+import './minime/MiniMeToken.sol';
 
 contract StakeTreeWithTokenization {
   using SafeMath for uint256;
@@ -36,7 +37,9 @@ contract StakeTreeWithTokenization {
     uint withdrawalPeriodInit, 
     uint withdrawalStart, 
     uint sunsetWithdrawPeriodInit,
-    uint minimumFundingAmountInit) {
+    uint minimumFundingAmountInit,
+    uint tokenName,
+    uint tokenSymbol) {
 
     beneficiary = beneficiaryAddress;
     withdrawalPeriod = withdrawalPeriodInit;
@@ -48,6 +51,8 @@ contract StakeTreeWithTokenization {
     minimumFundingAmount = minimumFundingAmountInit;
 
     contractStartTime = now;
+
+    MiniMeToken tokenContract = new MiniMeToken("Test Tokens", 18, "TTX");
   }
 
   // Modifiers
