@@ -122,9 +122,15 @@ contract('StakeTreeWithTokenization', function(accounts) {
       const balance = await instance.getContractBalance.call();
       assert.equal(balance, 20000, "Contract has 20000 wei balance");
     });
+
     it("[account d] should have correct withdrawal amount", async () => {
       const totalRefund = await instance.getRefundAmountForFunder.call(account_d);
       assert.equal(totalRefund, 20000, "Account D has 20000 left to withdraw");
+    });
+
+    it("[account d] should have a contribution allocated after topping up after a withdrawal", async () => {
+      const contribution = await instance.getFunderContribution.call(account_d);
+      assert.equal(contribution, 1900, "Account D should have been allocated 1900 as a contribution");
     });
 
     // x3

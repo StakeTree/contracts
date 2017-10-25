@@ -178,6 +178,10 @@ contract StakeTreeWithTokenization {
     return getRefundAmountForFunder(funder);
   }
 
+  function getFunderContribution(address addr) public constant returns (uint) {
+    return funders[addr].contribution;
+  }
+
   function isFunder(address addr) public constant returns (bool) {
     return funders[addr].exists;
   }
@@ -262,7 +266,7 @@ contract StakeTreeWithTokenization {
 
   function consolidateFunderViaTokenContract(address funder) external onlyByTokenContract {
     require(isFunder(funder));
-    
+
     if(funders[funder].withdrawalEntry < withdrawalCounter) {
       consolidateFunder(funder, 0); // No new payment is added here. So amount is zero
     }
