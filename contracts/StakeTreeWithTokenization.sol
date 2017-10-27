@@ -60,11 +60,6 @@ contract StakeTreeWithTokenization {
     _;
   }
 
-  modifier onlyByTokenContract() {
-    // require(msg.sender == tokenContract);
-    _;
-  }
-
   modifier onlyWhenTokenized() {
     require(isTokenized());
     _;
