@@ -1,4 +1,5 @@
 var StakeTreeWithTokenization = artifacts.require("./StakeTreeWithTokenization.sol");
+var MiniMeToken = artifacts.require("./MiniMeToken.sol");
 
 const ERROR_INVALID_OPCODE = 'VM Exception while processing transaction: invalid opcode';
 
@@ -59,101 +60,152 @@ contract('StakeTreeWithTokenization', function(accounts) {
     });
   });
 
-  describe('Account A', async () => {
+  describe('Account A setup', async () => {
     it("[account a] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 99});
+      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 10000});
       const balance = await instance.getContractBalance.call();
-      assert.equal(balance, 99, "Contract has 99 wei balance");
+      assert.equal(balance, 10000, "Contract has 10000 wei balance");
+    });
+  });
+
+  describe('Add tokenization', async () => {
+    it("should not have been tokenized yet", async () => {
+      const tokenized = await instance.tokenized.call();
+      assert.equal(tokenized, false, "Contract is not tokenized");
     });
 
-    it("[account a] should show funds of funder", async () => {
-      const balance = await instance.getFunderBalance.call(account_a);
-      assert.equal(balance, 99, "Account A has 99 wei balance");
+    it("should fail being called by non-beneficiary", async () => {
+      try {
+        await instance.addTokenization({from: account_b});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
     });
 
-    it("should get total funders", async () => {
-      const totalFunders = await instance.getCurrentTotalFunders.call();
-      assert.equal(totalFunders, 1, "There are 1 total funders");
+    it("[account a] should fail claiming tokens cause it's not tokenized yet", async () => {
+      try {
+         await instance.claimTokens();
+         assert.equal(true, false);
+       } catch (err) {
+         assert.equal(err.message, ERROR_INVALID_OPCODE);
+       }
+    });
+
+    it("should add a token contract", async () => {
+      await instance.addTokenization();
+      const tokenized = await instance.tokenized.call();
+      assert.equal(tokenized, true, "Contract is tokenized");
+    });
+
+    it("should fail adding tokenization again", async () => {
+      try {
+        await instance.addTokenization();
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+  });
+
+  describe('Claiming tokens', async () => {
+    it("[account a] should fail claiming tokens cause there is nothing to claim", async () => {
+      try {
+         await instance.claimTokens();
+         assert.equal(true, false);
+       } catch (err) {
+         assert.equal(err.message, ERROR_INVALID_OPCODE);
+       }
+    });
+
+    it("should withdraw to beneficiary", async () => {
+      await instance.withdraw();
+      const balanceAfter = await instance.getContractBalance.call();
+      assert.equal(balanceAfter, 9000, "Beneficiary has withdrawn 10%");
+    });
+
+    it("should fail being called by non-funder", async () => {
+      try {
+        await instance.claimTokens({from: account_c});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[account a] should claim tokens", async () => {
+      await instance.claimTokens();
+      const tokenContractAddr = await instance.tokenContract.call();
+      const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
+      const tokenBalance = await tokenContractInstance.balanceOf.call(account_a);
+      assert.equal(tokenBalance, 1000, "Account A claimed 1000 tokens");
+    });
+
+    it("[account a] should have claimed all tokens", async () => {
+      const contribution = await instance.getFunderContribution.call(account_a);
+      const contributionClaimed = await instance.getFunderContributionClaimed.call(account_a);
+      assert.deepEqual(contribution, contributionClaimed, "Account A claimed all their tokens");
+    });
+
+    it("[account a] should fail claiming tokens again", async () => {
+      try {
+         await instance.claimTokens();
+         assert.equal(true, false);
+       } catch (err) {
+         assert.equal(err.message, ERROR_INVALID_OPCODE);
+       }
+    });
+
+    it("should withdraw to beneficiary", async () => {
+      await instance.withdraw();
+      const balanceAfter = await instance.getContractBalance.call();
+      assert.equal(balanceAfter, 8100, "Beneficiary has withdrawn 10%");
+    });
+
+    it("[account a] should have the right contribution amount calculated on the fly", async () => {
+      const contribution = await instance.getFunderContribution.call(account_a);
+      assert.equal(contribution, 1900, "Account A contributed 1900");
     });
 
     it("[account a] should add more funds to the contract", async () => {
-      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 133});
+      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 10000});
       const balance = await instance.getContractBalance.call();
-      assert.equal(balance, 232, "Contract has 2000 wei balance");
+      assert.equal(balance, 18100, "Contract has 18100 wei balance");
     });
 
-    it("[account b] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({gas: 150000, from: account_b, to: instance.address, value: 345});
-      const balance = await instance.getContractBalance.call();
-      assert.equal(balance, 577, "Contract has 577 wei balance");
+    it("[account a] should have the correct balance after adding more funds", async () => {
+      const balance = await instance.getFunderBalance.call(account_a);
+      assert.equal(balance, 18100, "Account A has 18100 wei balance");
+    });
+
+    it("[account a] should have the right contribution amount", async () => {
+      const contribution = await instance.getFunderContribution.call(account_a);
+      assert.equal(contribution, 1900, "Account A contributed 1900");
+    });
+
+    it("[account a] should have the right contribution claimed amount", async () => {
+      const contribution = await instance.getFunderContributionClaimed.call(account_a);
+      assert.equal(contribution, 1000, "Account A claimed 1000");
     });
 
     it("should withdraw to beneficiary", async () => {
       await instance.withdraw();
       const balanceAfter = await instance.getContractBalance.call();
-      assert.equal(balanceAfter, 520, "Beneficiary has withdrawn 10%");
+      assert.equal(balanceAfter, 16290, "Beneficiary has withdrawn 10%");
     });
 
-    it("[account a] should get refund amount", async () => {
-      const balance = await instance.getRefundAmountForFunder.call(account_a);
-      assert.equal(balance, 208, "Account A can withdraw 208 wei balance");
+    it("[account a] should claim tokens", async () => {
+      await instance.claimTokens();
+      const tokenContractAddr = await instance.tokenContract.call();
+      const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
+      const tokenBalance = await tokenContractInstance.balanceOf.call(account_a);
+      assert.equal(tokenBalance, 3710, "Account A claimed tokens");
     });
 
-    it("[account b] should get refund amount", async () => {
-      const balance = await instance.getRefundAmountForFunder.call(account_b);
-      assert.equal(balance, 310, "Account B can withdraw 310 wei balance");
+    it("[account a] should have claimed all tokens", async () => {
+      const contribution = await instance.getFunderContribution.call(account_a);
+      const contributionClaimed = await instance.getFunderContributionClaimed.call(account_a);
+      assert.deepEqual(contribution, contributionClaimed, "Account A claimed all their tokens");
     });
-
-    it("[account a] should refund funder", async () => {
-      await instance.refund({from: account_a});
-      const balanceAfter = await instance.getContractBalance.call();
-      assert.equal(balanceAfter, 312, "Pool balance should be 312 wei balance");
-    });
-
-    it("[account b] should refund funder", async () => {
-      await instance.refund({from: account_b});
-      const balanceAfter = await instance.getContractBalance.call();
-      assert.equal(balanceAfter, 2, "Pool balance should be 2 wei balance");
-    });
-
-    it("[account a] should add funds to the contract", async () => {
-      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 107});
-      const balance = await instance.getContractBalance.call();
-      assert.equal(balance, 109, "Contract has 109 wei balance");
-    });
-
-    it("[account a] should get refund amount", async () => {
-      const balance = await instance.getRefundAmountForFunder.call(account_a);
-      assert.equal(balance, 107, "Account A can withdraw 107 wei balance");
-    });
-
-    it("should withdraw to beneficiary", async () => {
-      await instance.withdraw();
-      const actualBalance = await instance.getContractBalance.call();
-      assert.equal(actualBalance, 99, "Beneficiary has withdrawn 10%");
-    });
-
-    it("[account a] should get refund amount", async () => {
-      const balance = await instance.getRefundAmountForFunder.call(account_a);
-      assert.equal(balance, 96, "Account A can withdraw 96 wei balance");
-    });
-
-    it("should withdraw to beneficiary", async () => {
-      await instance.withdraw();
-      const actualBalance = await instance.getContractBalance.call();
-      assert.equal(actualBalance, 90, "Beneficiary has withdrawn 10%");
-    });
-
-    it("[account a] should get refund amount", async () => {
-      const balance = await instance.getRefundAmountForFunder.call(account_a);
-      assert.equal(balance, 86, "Account A can withdraw 86 wei balance");
-    });
-
-    it("[account a] should refund funder", async () => {
-      await instance.refund({from: account_a});
-      const balanceAfter = await instance.getContractBalance.call();
-      assert.equal(balanceAfter, 4, "Pool balance should be 3 wei balance");
-    });
-
   });
 });

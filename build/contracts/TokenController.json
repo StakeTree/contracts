@@ -25,7 +25,6 @@
         }
       ],
       "payable": false,
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -52,7 +51,6 @@
         }
       ],
       "payable": false,
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -71,7 +69,6 @@
         }
       ],
       "payable": true,
-      "stateMutability": "payable",
       "type": "function"
     }
   ],
@@ -502,5 +499,9 @@
   },
   "networks": {},
   "schemaVersion": "1.0.0",
-  "updatedAt": "2017-10-25T11:18:31.201Z"
+  "updatedAt": "2017-10-25T11:18:31.201Z",
+  "contract_name": "TokenController",
+  "unlinked_binary": "0x",
+  "schema_version": "0.0.5",
+  "updated_at": 1508960909522
 }

@@ -24,7 +24,6 @@
       "name": "receiveApproval",
       "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
       "type": "function"
     }
   ],
@@ -15418,5 +15417,9 @@
   },
   "networks": {},
   "schemaVersion": "1.0.0",
-  "updatedAt": "2017-10-25T11:18:31.213Z"
+  "updatedAt": "2017-10-25T11:18:31.213Z",
+  "contract_name": "ApproveAndCallFallBack",
+  "unlinked_binary": "0x",
+  "schema_version": "0.0.5",
+  "updated_at": 1508960909511
 }

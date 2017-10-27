@@ -21,8 +21,11 @@ contract StakeTreeWithTokenization {
   uint public totalCurrentFunders = 0; // Keeps track of total funders
   uint public withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
   uint public sunsetWithdrawDate;
-  address public tokenContract;
- 
+  
+  MiniMeToken public tokenContract;
+  MiniMeTokenFactory public tokenFactory;
+  bool public tokenized = false;
+
   address public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
   uint public withdrawalPeriod; // How long the beneficiary has to wait withdraw
@@ -49,8 +52,6 @@ contract StakeTreeWithTokenization {
     minimumFundingAmount = minimumFundingAmountInit;
 
     contractStartTime = now;
-
-    // MiniMeToken tokenContract = new MiniMeToken("Test Tokens", 18, "TTX");
   }
 
   // Modifiers
@@ -60,7 +61,12 @@ contract StakeTreeWithTokenization {
   }
 
   modifier onlyByTokenContract() {
-    require(msg.sender == tokenContract);
+    // require(msg.sender == tokenContract);
+    _;
+  }
+
+  modifier onlyWhenTokenized() {
+    require(isTokenized());
     _;
   }
 
@@ -152,9 +158,28 @@ contract StakeTreeWithTokenization {
   */
 
   function getRefundAmountForFunder(address addr) public constant returns (uint) {
-    uint amount = funders[addr].balance;
-    uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
-    return calculateRefundAmount(amount, withdrawalTimes);
+    // Only calculate on-the-fly if funder has not been updated
+    if(shouldUpdateFunder(addr)) {
+      uint amount = funders[addr].balance;
+      uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
+      return calculateRefundAmount(amount, withdrawalTimes);
+    }
+    else {
+      return funders[addr].balance;
+    }
+  }
+
+  function getFunderContribution(address funder) public constant returns (uint) {
+    // Only calculate on-the-fly if funder has not been updated
+    if(shouldUpdateFunder(funder)) {
+      uint oldBalance = funders[funder].balance;
+      uint newBalance = getRefundAmountForFunder(funder);
+      uint contribution = oldBalance.sub(newBalance);
+      return funders[funder].contribution.add(contribution);
+    }
+    else {
+      return funders[funder].contribution;
+    }
   }
 
   function getBeneficiary() public constant returns (address) {
@@ -181,12 +206,20 @@ contract StakeTreeWithTokenization {
     return getRefundAmountForFunder(funder);
   }
 
-  function getFunderContribution(address addr) public constant returns (uint) {
-    return funders[addr].contribution;
+  function getFunderContributionClaimed(address addr) public constant returns (uint) {
+    return funders[addr].contributionClaimed;
   }
 
   function isFunder(address addr) public constant returns (bool) {
     return funders[addr].exists;
+  }
+
+  function isTokenized() public constant returns (bool) {
+    return tokenized;
+  }
+
+  function shouldUpdateFunder(address funder) public constant returns (bool) {
+    return getWithdrawalEntryForFunder(funder) < withdrawalCounter;
   }
 
   function getHowManyWithdrawalsForFunder(address addr) private constant returns (uint) {
@@ -245,54 +278,34 @@ contract StakeTreeWithTokenization {
   */
 
   function consolidateFunder(address funder, uint newPayment) private {
-    // Only consolidate funder if there's been a withdrawal 
-    // since the funder entered the contract
-    uint oldBalance = funders[funder].balance;
-    uint newBalance = getRefundAmountForFunder(funder);
-
-    // Increase contribution
-    if(newBalance < oldBalance) {
-      uint contribution = oldBalance.sub(newBalance);
-      funders[funder].contribution = funders[funder].contribution.add(contribution);
-    }
-
+    // Update contribution
+    funders[funder].contribution = getFunderContribution(funder);
     // Update balance
-    funders[funder].balance = newBalance.add(newPayment);
+    funders[funder].balance = getRefundAmountForFunder(funder).add(newPayment);
     // Update withdrawal entry
     funders[funder].withdrawalEntry = withdrawalCounter;
   }
 
-  /*
-  * This can only be called by token contract
-  * To consolidate state before claiming tokens. 
-  */
+  function addTokenization() external onlyByBeneficiary {
+    require(!isTokenized());
 
-  function consolidateFunderViaTokenContract(address funder) external onlyByTokenContract {
-    require(isFunder(funder));
+    tokenFactory = new MiniMeTokenFactory();
+    tokenContract = tokenFactory.createCloneToken(0x0, 0, "TestTokens", 18, "TTX", true);
 
-    if(funders[funder].withdrawalEntry < withdrawalCounter) {
-      consolidateFunder(funder, 0); // No new payment is added here. So amount is zero
-    }
+    tokenized = true;
   }
 
-  /*
-  * This function can only be called by the token contract.
-  * This updates the amount of tokens the funder has claimed.
-  */
+  function claimTokens() external onlyByFunder onlyWhenTokenized {
+    uint contributionAmount = getFunderContribution(msg.sender);
+    uint contributionClaimedAmount = getFunderContributionClaimed(msg.sender);
 
-  function updatecontributionClaimed(address funder, uint amountClaimed) external onlyByTokenContract {
-    require(isFunder(funder));
+    // Only claim tokens if they have some left to claim
+    uint claimAmount = contributionAmount.sub(contributionClaimedAmount);
+    require(claimAmount > 0);
 
-    funders[funder].contributionClaimed = funders[funder].contributionClaimed.add(amountClaimed);
-  }
-
-  /*
-  * TODO: Who must be able to call this? In what cases would this be updated?
-  * This sets the contract address.
-  */
-
-  function setTokenContract(address addr) external onlyByTokenContract {
-    tokenContract = addr;
+    // Claim tokens
+    funders[msg.sender].contributionClaimed = contributionAmount;
+    tokenContract.generateTokens(msg.sender, claimAmount);
   }
 
   /* --- Sunsetting --- */
