@@ -268,8 +268,8 @@ contract StakeTreeWithTokenization {
   }
 
   /*
-  * This is a bookkeeping function which updates the state for the funder 
-  * after withdrawals has occurred.
+  * This is a bookkeeping function which updates the state for the funder
+  * when top up their funds.
   */
 
   function consolidateFunder(address funder, uint newPayment) private {
