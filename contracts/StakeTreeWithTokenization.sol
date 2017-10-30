@@ -281,11 +281,11 @@ contract StakeTreeWithTokenization {
     funders[funder].withdrawalEntry = withdrawalCounter;
   }
 
-  function addTokenization() external onlyByBeneficiary {
+  function addTokenization(string tokenName, string tokenSymbol, uint8 tokenDecimals ) external onlyByBeneficiary {
     require(!isTokenized());
 
     tokenFactory = new MiniMeTokenFactory();
-    tokenContract = tokenFactory.createCloneToken(0x0, 0, "TestTokens", 18, "TTX", true);
+    tokenContract = tokenFactory.createCloneToken(0x0, 0, tokenName, tokenDecimals, tokenSymbol, true);
 
     tokenized = true;
   }

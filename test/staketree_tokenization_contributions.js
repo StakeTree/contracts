@@ -76,7 +76,7 @@ contract('StakeTreeWithTokenization', function(accounts) {
 
     it("should fail being called by non-beneficiary", async () => {
       try {
-        await instance.addTokenization({from: account_b});
+        await instance.addTokenization("Testing Tokens", "TTX", 18, {from: account_b});
         assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
@@ -93,14 +93,28 @@ contract('StakeTreeWithTokenization', function(accounts) {
     });
 
     it("should add a token contract", async () => {
-      await instance.addTokenization();
+      await instance.addTokenization("Testing Tokens", "TTX", 18);
       const tokenized = await instance.tokenized.call();
-      assert.equal(tokenized, true, "Contract is tokenized");
+
+      const tokenContractAddr = await instance.tokenContract.call();
+      const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
+      const tokenName = await tokenContractInstance.name.call();
+      const tokenSymbol = await tokenContractInstance.symbol.call();
+      const tokenDecimals = await tokenContractInstance.decimals.call();
+      
+      const details = {tokenized, tokenName, tokenSymbol, tokenDecimals: tokenDecimals.c[0]};
+
+      assert.deepEqual(details, {
+        tokenized: true,
+        tokenName: "Testing Tokens",
+        tokenSymbol: "TTX",
+        tokenDecimals: 18,
+      }, "Contract has tokenized with correct details");
     });
 
     it("should fail adding tokenization again", async () => {
       try {
-        await instance.addTokenization();
+        await instance.addTokenization("Testing Tokens", "TTX", 18);
         assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
