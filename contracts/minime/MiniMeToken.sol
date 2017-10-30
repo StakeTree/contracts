@@ -26,7 +26,6 @@ pragma solidity ^0.4.15;
 /// @dev It is ERC20 compliant, but still needs to under go further testing.
 
 import "./Controlled.sol";
-import "./TokenController.sol";
 
 contract ApproveAndCallFallBack {
     function receiveApproval(address from, uint256 _amount, address _token, bytes _data) public;
@@ -181,11 +180,6 @@ contract MiniMeToken is Controlled {
                return false;
            }
 
-           // Alerts the token controller of the transfer
-           if (isContract(controller)) {
-               require(TokenController(controller).onTransfer(_from, _to, _amount));
-           }
-
            // First update the balance array with the new value for the address
            //  sending the tokens
            updateValueAtNow(balances[_from], previousBalanceFrom - _amount);
@@ -222,11 +216,6 @@ contract MiniMeToken is Controlled {
         //  already 0 to mitigate the race condition described here:
         //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
         require((_amount == 0) || (allowed[msg.sender][_spender] == 0));
-
-        // Alerts the token controller of the approve function call
-        if (isContract(controller)) {
-            require(TokenController(controller).onApprove(msg.sender, _spender, _amount));
-        }
 
         allowed[msg.sender][_spender] = _amount;
         Approval(msg.sender, _spender, _amount);
@@ -482,8 +471,6 @@ contract MiniMeToken is Controlled {
     ///  set to 0, then the `proxyPayment` method is called which relays the
     ///  ether and creates tokens as described in the token controller contract
     function () public payable {
-        require(isContract(controller));
-        require(TokenController(controller).proxyPayment.value(msg.value)(msg.sender));
     }
 
 //////////

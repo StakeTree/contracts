@@ -262,5 +262,17 @@ contract('StakeTreeWithTokenization', function(accounts) {
       const tokenBalance = await tokenContractInstance.balanceOf.call(account_a);
       assert.equal(tokenBalance, 5710, "Account A claimed tokens");
     });
+
+    it("[account a] should transfer tokens", async () => {
+      const tokenContractAddr = await instance.tokenContract.call();
+      const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
+      await tokenContractInstance.transfer(account_b, 1000);
+
+      const tokenBalanceA = await tokenContractInstance.balanceOf.call(account_a);
+      const tokenBalanceB = await tokenContractInstance.balanceOf.call(account_b);
+      const tokenBalances = {tokenBalanceA: tokenBalanceA.c[0], tokenBalanceB: tokenBalanceB.c[0]};
+
+      assert.deepEqual(tokenBalances, {tokenBalanceA: 4710, tokenBalanceB: 1000}, "Account A claimed tokens");
+    });
   });
 });
