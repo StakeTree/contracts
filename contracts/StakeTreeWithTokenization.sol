@@ -308,7 +308,7 @@ contract StakeTreeWithTokenization {
   }
 
   /*
-  * Then beneficiary can stop/enable funders from claiming more tokens.
+  * The beneficiary can stop/enable funders from claiming more tokens.
   * This opens up opportunities for tokenizing only happening for a set periods.
   */
   function enableTokenClaiming(bool _enabled) external onlyWhenTokenized onlyByBeneficiary {
@@ -332,5 +332,19 @@ contract StakeTreeWithTokenization {
     require(now >= sunsetWithdrawDate);
 
     recipient.transfer(this.balance);
+  }
+
+  /* --- Token Contract Forwarding Controller Functions --- */
+  /* 
+  * Allows beneficiary to call two additional functions on the token contract:
+  * claimTokens
+  * enabledTransfers
+  * 
+  */
+  function tokenContractClaimTokens(address _token) onlyByBeneficiary onlyWhenTokenized {
+    tokenContract.claimTokens(_token);
+  }
+  function tokenContractEnableTransfers(bool _transfersEnabled) onlyByBeneficiary onlyWhenTokenized {
+    tokenContract.enableTransfers(_transfersEnabled);
   }
 }
