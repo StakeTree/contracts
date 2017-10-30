@@ -25,6 +25,7 @@ contract StakeTreeWithTokenization {
   MiniMeToken public tokenContract;
   MiniMeTokenFactory public tokenFactory;
   bool public tokenized = false;
+  bool public canClaimTokens = false;
 
   address public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
@@ -288,9 +289,12 @@ contract StakeTreeWithTokenization {
     tokenContract = tokenFactory.createCloneToken(0x0, 0, tokenName, tokenDecimals, tokenSymbol, true);
 
     tokenized = true;
+    canClaimTokens = true;
   }
 
   function claimTokens() external onlyByFunder onlyWhenTokenized {
+    require(canClaimTokens);
+
     uint contributionAmount = getFunderContribution(msg.sender);
     uint contributionClaimedAmount = getFunderContributionClaimed(msg.sender);
 
@@ -301,6 +305,14 @@ contract StakeTreeWithTokenization {
     // Claim tokens
     funders[msg.sender].contributionClaimed = contributionAmount;
     tokenContract.generateTokens(msg.sender, claimAmount);
+  }
+
+  /*
+  * Then beneficiary can stop/enable funders from claiming more tokens.
+  * This opens up opportunities for tokenizing only happening for a set periods.
+  */
+  function enableTokenClaiming(bool _enabled) external onlyWhenTokenized onlyByBeneficiary {
+    canClaimTokens = _enabled;
   }
 
   /* --- Sunsetting --- */

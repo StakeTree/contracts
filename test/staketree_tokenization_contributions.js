@@ -221,5 +221,46 @@ contract('StakeTreeWithTokenization', function(accounts) {
       const contributionClaimed = await instance.getFunderContributionClaimed.call(account_a);
       assert.deepEqual(contribution, contributionClaimed, "Account A claimed all their tokens");
     });
+
+    it("[account a] should add more funds to the contract", async () => {
+      await web3.eth.sendTransaction({gas: 150000, from: account_a, to: instance.address, value: 3710});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 20000, "Contract has 20000 wei balance");
+    });
+
+    it("should withdraw to beneficiary", async () => {
+      await instance.withdraw();
+      const balanceAfter = await instance.getContractBalance.call();
+      assert.equal(balanceAfter, 18000, "Beneficiary has withdrawn 10%");
+    });
+
+    it("should stop claiming tokens", async () => {
+      await instance.enableTokenClaiming(false);
+      const canClaimTokens = await instance.canClaimTokens.call();
+      assert.equal(canClaimTokens, false, "Beneficiary has withdrawn 10%");
+    });
+
+    it("[account a] should fail claiming tokens", async () => {
+      try {
+        await instance.claimTokens();
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("should enable claiming tokens", async () => {
+      await instance.enableTokenClaiming(true);
+      const canClaimTokens = await instance.canClaimTokens.call();
+      assert.equal(canClaimTokens, true, "Beneficiary has withdrawn 10%");
+    });
+
+    it("[account a] should claim tokens", async () => {
+      await instance.claimTokens();
+      const tokenContractAddr = await instance.tokenContract.call();
+      const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
+      const tokenBalance = await tokenContractInstance.balanceOf.call(account_a);
+      assert.equal(tokenBalance, 5710, "Account A claimed tokens");
+    });
   });
 });
