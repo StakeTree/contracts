@@ -262,8 +262,10 @@ contract('StakeTreeWithTokenization', function(accounts) {
       const tokenBalance = await tokenContractInstance.balanceOf.call(account_a);
       assert.equal(tokenBalance, 5710, "Account A claimed tokens");
     });
+  });
 
-    it("[account a] should transfer tokens", async () => {
+  describe('Token contract interface', async () => {
+    it("[account a] should transfer tokens to account_b", async () => {
       const tokenContractAddr = await instance.tokenContract.call();
       const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
       await tokenContractInstance.transfer(account_b, 1000);
@@ -272,7 +274,35 @@ contract('StakeTreeWithTokenization', function(accounts) {
       const tokenBalanceB = await tokenContractInstance.balanceOf.call(account_b);
       const tokenBalances = {tokenBalanceA: tokenBalanceA.c[0], tokenBalanceB: tokenBalanceB.c[0]};
 
-      assert.deepEqual(tokenBalances, {tokenBalanceA: 4710, tokenBalanceB: 1000}, "Account A claimed tokens");
+      assert.deepEqual(tokenBalances, {tokenBalanceA: 4710, tokenBalanceB: 1000}, "Account A transferred tokens");
+    });
+
+    it("[account a] should fail tranferring tokens after transfers stopped", async () => {
+      try {
+        await instance.tokenContractEnableTransfers(false);
+
+        const tokenContractAddr = await instance.tokenContract.call();
+        const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
+
+        await tokenContractInstance.transfer(account_b, 1000);
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[account b] should transfer tokens again after transfers enabled", async () => {
+      await instance.tokenContractEnableTransfers(true);
+
+      const tokenContractAddr = await instance.tokenContract.call();
+      const tokenContractInstance = await MiniMeToken.at(tokenContractAddr);
+
+      await tokenContractInstance.transfer(account_a, 500, {from: account_b});
+      const tokenBalanceA = await tokenContractInstance.balanceOf.call(account_a);
+      const tokenBalanceB = await tokenContractInstance.balanceOf.call(account_b);
+      const tokenBalances = {tokenBalanceA: tokenBalanceA.c[0], tokenBalanceB: tokenBalanceB.c[0]};
+
+      assert.deepEqual(tokenBalances, {tokenBalanceA: 5210, tokenBalanceB: 500}, "Account A claimed tokens");
     });
   });
 });
