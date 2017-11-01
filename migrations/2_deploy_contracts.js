@@ -1,4 +1,4 @@
-var StakeTreeMVPFactory = artifacts.require("./StakeTreeMVPFactory.sol");
+var StakeTreeWithTokenizationFactory = artifacts.require("./StakeTreeWithTokenizationFactory.sol");
 
 // Deploy config
 const nowUnix = new Date().getTime()/1000;
@@ -15,7 +15,7 @@ const config = {
 module.exports = function(deployer, network, accounts) {
   let factory;
   deployer.then(()=>{
-    return StakeTreeMVPFactory.new();
+    return StakeTreeWithTokenizationFactory.new();
   })
   .then((instance)=>{
     factory = instance;
@@ -34,9 +34,9 @@ module.exports = function(deployer, network, accounts) {
       .then(()=>{
         return factory.getContractAddress.call({from: accounts[0]});
       })
-      .then((mvp)=>{
-        console.log("Factory deployed MVP address:", mvp);
-        return mvp;
+      .then((staketree)=>{
+        console.log("Factory deployed address:", staketree);
+        return staketree;
       });
     }
 
