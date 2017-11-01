@@ -36,6 +36,12 @@ contract StakeTreeWithTokenization {
 
   uint public contractStartTime; // For accounting purposes
 
+  event Payment(address indexed funder, uint amount);
+  event Refund(address indexed funder, uint amount);
+  event Withdrawal(uint amount);
+  event TokensClaimed(address indexed funder, uint amount);
+  event Sunset(bool hasSunset);
+
   function StakeTreeWithTokenization(
     address beneficiaryAddress, 
     uint withdrawalPeriodInit, 
@@ -116,6 +122,8 @@ contract StakeTreeWithTokenization {
     else { 
       consolidateFunder(msg.sender, msg.value);
     }
+
+    Payment(msg.sender, msg.value);
   }
 
   // Pure functions
@@ -239,6 +247,8 @@ contract StakeTreeWithTokenization {
 
     // Interaction
     beneficiary.transfer(amount);
+
+    Withdrawal(amount);
   }
 
   // Refunding by funder
@@ -256,6 +266,8 @@ contract StakeTreeWithTokenization {
 
     // Interaction
     msg.sender.transfer(amount);
+
+    Refund(msg.sender, amount);
 
     // Make sure this worked as intended
     assert(this.balance == walletBalance-amount);
@@ -305,6 +317,8 @@ contract StakeTreeWithTokenization {
     // Claim tokens
     funders[msg.sender].contributionClaimed = contributionAmount;
     tokenContract.generateTokens(msg.sender, claimAmount);
+
+    TokensClaimed(msg.sender, claimAmount);
   }
 
   /*
@@ -326,6 +340,8 @@ contract StakeTreeWithTokenization {
   function sunset() external onlyByBeneficiary onlyWhenLive {
     sunsetWithdrawDate = now.add(sunsetWithdrawalPeriod);
     live = false;
+
+    Sunset(true);
   }
 
   function swipe(address recipient) external onlyWhenSunset onlyByBeneficiary {

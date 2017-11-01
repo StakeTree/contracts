@@ -1,4 +1,4 @@
-var StakeTreeTokenizationFactory = artifacts.require("./StakeTreeTokenizationFactory.sol");
+var StakeTreeWithTokenizationFactory = artifacts.require("./StakeTreeWithTokenizationFactory.sol");
 
 // Deploy config
 const nowUnix = new Date().getTime()/1000;
@@ -15,7 +15,7 @@ const config = {
 module.exports = function(deployer, network, accounts) {
   let factory;
   deployer.then(()=>{
-    return StakeTreeTokenizationFactory.new();
+    return StakeTreeWithTokenizationFactory.new();
   })
   .then((instance)=>{
     factory = instance;
