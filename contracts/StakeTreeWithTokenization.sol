@@ -5,7 +5,7 @@ import './minime/MiniMeToken.sol';
 contract StakeTreeWithTokenization {
   using SafeMath for uint256;
 
-  uint public version = 1;
+  uint public version = 2;
 
   struct Funder {
     bool exists;
