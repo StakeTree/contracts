@@ -334,90 +334,103 @@ contract('StakeTreeXOverY', function(accounts) {
       const nextWithdrawal = await instance.getNextWithdrawalAmount.call();
       assert.equal(nextWithdrawal, 0, "Next withdrawal is 0");
     });
+
+    it("should get total funders as 0", async () => {
+      const totalFunders = await instance.getCurrentTotalFunders.call();
+      assert.equal(totalFunders, 0, "There are 0 total funders");
+    });
   });
 
-  // describe('Complex integration test 2: three funders arrive -> one tops up -> withdrawal -> refund one -> one tops up -> 2nd withdrawal -> refund two', async () => {
-  //   // Three funders arrive
-  //   it("[account d] should add funds to the contract", async () => {
-  //     await instance.fund(10, {value: 10000, from: account_d});
-  //     const balance = await instance.getContractBalance.call();
-  //     assert.equal(balance, 10000, "Contract has 10000 wei balance");
-  //   });
-  //   it("[account e] should add funds to the contract", async () => {
-  //     await instance.fund(5, {value: 10000, from: account_d});
-  //     const balance = await instance.getContractBalance.call();
-  //     assert.equal(balance, 20000, "Contract has 20000 wei balance");
-  //   });
-  //   it("[account f] should add funds to the contract", async () => {
-  //     await instance.fund(20, {value: 10000, from: account_d});
-  //     const balance = await instance.getContractBalance.call();
-  //     assert.equal(balance, 30000, "Contract has 30000 wei balance");
-  //   });
+  describe('Complex integration test 2: three funders arrive -> one tops up -> withdrawal -> refund one -> one tops up -> 2nd withdrawal -> refund two', async () => {
+    // Three funders arrive
 
-  //   it("should get total funders as 3", async () => {
-  //     const totalFunders = await instance.getCurrentTotalFunders.call();
-  //     assert.equal(totalFunders, 3, "There are 3 total funders");
-  //   });
+    it("[account d] should add funds to the contract", async () => {
+      await instance.fund(10, {value: 10000, from: account_d});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 10000, "Contract has 10000 wei balance");
+    }); // 1000
 
-  //   // One tops up
-  //   it("[account e] should add funds to the contract", async () => {
-  //    await instance.fund(4, {value: 8000, from: account_d});
-  //     const balance = await instance.getContractBalance.call();
-  //     assert.equal(balance, 38000, "Contract has 38000 wei balance");
-  //   });
+    it("[account e] should add funds to the contract", async () => {
+      await instance.fund(5, {value: 10000, from: account_e});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 20000, "Contract has 20000 wei balance");
+    }); // 2000
 
-  //   // E 10000 -> 18000
-  //   it("[account e] should have funds correct balance", async () => {
-  //     const balance = await instance.getFunderBalance.call(account_e);
-  //     assert.equal(balance, 18000, "Account E has 18000 wei balance");
-  //   });
+    it("[account f] should add funds to the contract", async () => {
+      await instance.fund(20, {value: 10000, from: account_f});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 30000, "Contract has 30000 wei balance");
+    }); // 500
 
-  //   it("should still get total funders as 3", async () => {
-  //     const totalFunders = await instance.getCurrentTotalFunders.call();
-  //     assert.equal(totalFunders, 3, "There are 3 total funders");
-  //   });
+    it("should get total funders as 3", async () => {
+      const totalFunders = await instance.getCurrentTotalFunders.call();
+      assert.equal(totalFunders, 3, "There are 3 total funders");
+    });
+
+    // One tops up
+    it("[account e] should add funds to the contract", async () => {
+      await instance.fund(4, {value: 8000, from: account_e});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 38000, "Contract has 38000 wei balance");
+    }); // 2000
+
+    // E 10000 -> 18000
+    it("[account e] should have correct refund amount", async () => {
+      const refundAmount = await instance.getRefundAmountForFunder.call(account_e);
+      assert.equal(refundAmount, 18000, "Account E has 18000 wei balance");
+    });
+
+    it("should still get total funders as 3", async () => {
+      const totalFunders = await instance.getCurrentTotalFunders.call();
+      assert.equal(totalFunders, 3, "There are 3 total funders");
+    });
 
     // Withdraw
-    // it("should withdraw to beneficiary", async () => {
-    //   await instance.withdraw();
-    //   const balanceAfter = await instance.getContractBalance.call();
-    //   assert.equal(balanceAfter, 1260, "Beneficiary has withdrawn 10%");
-    // });
+    it("should get correct next withdrawal amount", async () => {
+      const nextWithdrawal = await instance.getNextWithdrawalAmount.call();
+      assert.equal(nextWithdrawal, 5500, "Next withdrawal is 5500");
+    });
 
-    // // D 100 -> 90
-    // it("[account d] should have correct withdrawal amount", async () => {
-    //   const totalRefund = await instance.getRefundAmountForFunder.call(account_d);
-    //   assert.equal(totalRefund, 90, "Account D has 90 left to withdraw");
-    // });
+    it("should withdraw to beneficiary", async () => {
+      await instance.withdraw();
+      const balanceAfter = await instance.getContractBalance.call();
+      assert.equal(balanceAfter, 32500, "Beneficiary has withdrawn");
+    });
 
-    // // E 1000 -> 900
-    // it("[account e] should have correct withdrawal amount", async () => {
-    //   const totalRefund = await instance.getRefundAmountForFunder.call(account_e);
-    //   assert.equal(totalRefund, 900, "Account E has 900 left to withdraw");
-    // });
+    // D 10000 - 1000
+    it("[account d] should have correct refund amount", async () => {
+      const totalRefund = await instance.getRefundAmountForFunder.call(account_d);
+      assert.equal(totalRefund, 9000, "Account D has 9000 left to withdraw");
+    });
 
-    // // F 300 -> 270
-    // it("[account f] should have correct withdrawal amount", async () => {
-    //   const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
-    //   assert.equal(totalRefund, 270, "Account F has 270 left to withdraw");
-    // });
+    // E (10000 - 2000) + (8000 - 2000)
+    it("[account e] should have correct refund amount", async () => {
+      const totalRefund = await instance.getRefundAmountForFunder.call(account_e);
+      assert.equal(totalRefund, 14000, "Account E has 14000 left to withdraw");
+    });
 
-    // // Refund Account D
-    // // D 90 -> 0
-    // it("[account d] should refund their funds", async () => {
-    //   await instance.refund({from: account_d});
-    //   const balance = await instance.getContractBalance.call();
-    //   assert.equal(balance, 1170, "Account D has been refunded 90. Wallet balance is now 1170");
-    // });
+    // F 10000 - 500
+    it("[account f] should have correct refund amount", async () => {
+      const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
+      assert.equal(totalRefund, 9500, "Account F has 9500 left to withdraw");
+    });
 
-    // it("[account d] should fail refunding their funds again", async () => {
-    //   try {
-    //     await instance.refund({from: account_d});
-    //     assert.equal(true, false);
-    //   } catch (err) {
-    //     assert.equal(err.message, ERROR_INVALID_OPCODE);
-    //   }
-    // });
+    // Refund Account D
+    // D 9000 -> 0
+    it("[account d] should refund their funds", async () => {
+      await instance.refund({from: account_d});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 23500, "Account D has been refunded 9000. Wallet balance is now ");
+    });
+
+    it("[account d] should fail refunding their funds again", async () => {
+      try {
+        await instance.refund({from: account_d});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
 
     // // Account F tops up
     // // F 270 -> 600
