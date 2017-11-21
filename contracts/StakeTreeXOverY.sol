@@ -118,7 +118,8 @@ contract StakeTreeXOverY {
       });
 
       uint amountPerInterval = msg.value/duration;
-      for(uint i=withdrawalCounter; i<=until; i++) {
+      uint from = withdrawalCounter+1;
+      for(uint i=from; i<=until; i++) {
         withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
         funders[msg.sender].fundingAmounts[i] = amountPerInterval;
       }
@@ -137,7 +138,8 @@ contract StakeTreeXOverY {
     uint totalLeft = 0;
     uint until = getFunderDurationLeft(addr);
 
-    for(uint i=withdrawalCounter; i<until; i++) {
+    uint from = withdrawalCounter+1;
+    for(uint i=from; i<=until; i++) {
       totalLeft = totalLeft.add(funders[addr].fundingAmounts[i]);
     }
 
@@ -149,7 +151,7 @@ contract StakeTreeXOverY {
   }
 
   function getNextWithdrawalAmount() public constant returns (uint) {
-    return withdrawalAmounts[withdrawalCounter];
+    return withdrawalAmounts[withdrawalCounter+1];
   }
 
   function getWithdrawalAt(uint index) public constant returns (uint) {
@@ -248,11 +250,13 @@ contract StakeTreeXOverY {
     uint amount = getRefundAmountForFunder(msg.sender);
 
     // Effects
-
     // Deduct allocated amounts for beneficiary
+    // And nullify fundingAmounts in funder struct
     uint until = getFunderDurationLeft(msg.sender);
-    for(uint i=withdrawalCounter; i<=until; i++) {
+    uint from = withdrawalCounter+1;
+    for(uint i=from; i<=until; i++) {
       withdrawalAmounts[i] = withdrawalAmounts[i].sub(funders[msg.sender].fundingAmounts[i]);
+      funders[msg.sender].fundingAmounts[i] = 0;
     }
 
     removeFunder();
@@ -288,13 +292,17 @@ contract StakeTreeXOverY {
     // Update allocated withdrawal amounts
     uint amountPerInterval = newPayment/duration;
     uint until = duration.add(withdrawalCounter);
-    for(uint i=withdrawalCounter; i<=until; i++) {
+    uint from = withdrawalCounter+1;
+    for(uint i=from; i<=until; i++) {
       withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
       funders[msg.sender].fundingAmounts[i] = funders[msg.sender].fundingAmounts[i].add(amountPerInterval);
     }
 
     // Update until
-    funders[funder].until = until;
+    // Only update this if the until is smaller than a new duration
+    if(funders[funder].until < until) {
+      funders[funder].until = until;
+    }
 
     // Update withdrawal entry
     // funders[funder].withdrawalEntry = withdrawalCounter;
