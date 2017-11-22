@@ -34,7 +34,7 @@ contract('StakeTreeXOverY', function(accounts) {
         config.withdrawalPeriod, 
         config.startTime,
         config.sunsetWithdrawalPeriod,
-        config.minimumFundingAmount , 
+        // config.minimumFundingAmount , 
       {from: account_a});
 
       // For testing sunset & swiping
@@ -43,7 +43,7 @@ contract('StakeTreeXOverY', function(accounts) {
         0,
         config.startTime,
         0,
-        config.minimumFundingAmount,  
+        // config.minimumFundingAmount,  
       {from: account_a});
 
       // For testing sunset & swiping
@@ -52,7 +52,7 @@ contract('StakeTreeXOverY', function(accounts) {
         0,
         config.startTime-10000,
         1000,
-        config.minimumFundingAmount,  
+        // config.minimumFundingAmount,  
       {from: account_a});
       deployed = true;
     }
@@ -64,44 +64,44 @@ contract('StakeTreeXOverY', function(accounts) {
       assert.equal(beneficiary, account_a, "Beneficiary address has been set");
     });
 
-    it("should have correct minimum funding amount", async () => { 
-      const min = await instance.minimumFundingAmount.call();
-      assert.equal(min, 1, "Minimum amount is set correctly to 1 wei");
-    });
+    // it("should have correct minimum funding amount", async () => { 
+    //   const min = await instance.minimumFundingAmount.call();
+    //   assert.equal(min, 1, "Minimum amount is set correctly to 1 wei");
+    // });
 
-    it("should change minimum funding amount", async () => { 
-      const weiAmount = web3.toWei(0.01, 'ether');
-      await instance.setMinimumFundingAmount(weiAmount);
-      const min = await instance.minimumFundingAmount.call();
-      assert.equal(min, weiAmount, "Minimum amount is set correctly to 0.1 ether");
-    });
+    // it("should change minimum funding amount", async () => { 
+    //   const weiAmount = web3.toWei(0.01, 'ether');
+    //   await instance.setMinimumFundingAmount(weiAmount);
+    //   const min = await instance.minimumFundingAmount.call();
+    //   assert.equal(min, weiAmount, "Minimum amount is set correctly to 0.1 ether");
+    // });
 
-    it("should fail changing minimum funding amount by non-beneficiary", async () => { 
-      try {
-        const weiAmount = web3.toWei(0.01, 'ether');
-        await instance.setMinimumFundingAmount(weiAmount, {from: account_b});
-        assert.equal(true, false);
-      } catch(err) {
-        assert.equal(err.message, ERROR_INVALID_OPCODE);
-      }
-    });
+    // it("should fail changing minimum funding amount by non-beneficiary", async () => { 
+    //   try {
+    //     const weiAmount = web3.toWei(0.01, 'ether');
+    //     await instance.setMinimumFundingAmount(weiAmount, {from: account_b});
+    //     assert.equal(true, false);
+    //   } catch(err) {
+    //     assert.equal(err.message, ERROR_INVALID_OPCODE);
+    //   }
+    // });
 
-    it("should fail sending below minimum funding amount", async () => { 
-      try {
-        const weiAmount = web3.toWei(0.001, 'ether');
-        await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance.address, value: weiAmount});
-        assert.equal(true, false);
-      } catch(err) {
-        assert.equal(err.message, ERROR_INVALID_OPCODE);
-      }
-    });
+    // it("should fail sending below minimum funding amount", async () => { 
+    //   try {
+    //     const weiAmount = web3.toWei(0.001, 'ether');
+    //     await web3.eth.sendTransaction({gas: 100000, from: account_a, to: instance.address, value: weiAmount});
+    //     assert.equal(true, false);
+    //   } catch(err) {
+    //     assert.equal(err.message, ERROR_INVALID_OPCODE);
+    //   }
+    // });
 
-    it("should change minimum funding amount back", async () => { 
-      const weiAmount = web3.toWei(1, 'wei');
-      await instance.setMinimumFundingAmount(weiAmount);
-      const min = await instance.minimumFundingAmount.call();
-      assert.equal(min, weiAmount, "Minimum amount is set correctly to 1 wei");
-    });
+    // it("should change minimum funding amount back", async () => { 
+    //   const weiAmount = web3.toWei(1, 'wei');
+    //   await instance.setMinimumFundingAmount(weiAmount);
+    //   const min = await instance.minimumFundingAmount.call();
+    //   assert.equal(min, weiAmount, "Minimum amount is set correctly to 1 wei");
+    // });
 
     it("should have set withdrawal timeframe correctly", async () => {
       const withdrawalPeriod = await instance.withdrawalPeriod.call();

@@ -33,7 +33,7 @@ contract('StakeTreeXOverY', function(accounts) {
         config.withdrawalPeriod, 
         config.startTime, 
         config.sunsetWithdrawalPeriod,
-        config.minimumFundingAmount,
+        // config.minimumFundingAmount,
       {from: account_a});
       deployed = true;
     }
