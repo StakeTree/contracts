@@ -137,6 +137,24 @@ contract('StakeTreeXOverY', function(accounts) {
   });
 
   describe('Account A unit testing', async () => {
+    it("[account a] should fail adding funds with zero duration", async () => {
+      try {
+        await instance.fund(0, {value: 1000, from: account_a});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
+    it("[account a] should fail adding funds over 52 duration", async () => {
+      try {
+        await instance.fund(53, {value: 1000, from: account_a});
+        assert.equal(true, false);
+      } catch (err) {
+        assert.equal(err.message, ERROR_INVALID_OPCODE);
+      }
+    });
+
     it("[account a] should add funds to the contract", async () => {
       await instance.fund(8, {value: 1000, from: account_a});
       const balance = await instance.getContractBalance.call();

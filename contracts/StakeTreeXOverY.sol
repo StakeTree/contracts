@@ -101,7 +101,9 @@ contract StakeTreeXOverY {
   */
 
   function fund(uint duration) public payable onlyWhenLive {
-    // TODO: require right duration
+    // Fit within one year duration (default 7 day duration)
+    // Cap this on any interval also due to increasing gas costs.
+    require(duration > 0 && duration < 53); 
 
     // Only increase total funders when we have a new funder
     if(!isFunder(msg.sender)) {
