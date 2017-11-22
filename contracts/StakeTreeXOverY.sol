@@ -284,7 +284,7 @@ contract StakeTreeXOverY {
 
   function consolidate(address funder, uint duration, uint newPayment) private {
     // Update contribution
-    // funders[funder].contribution = getFunderContribution(funder);
+    funders[funder].contribution = getFunderContribution(funder);
     
     // Update balance
     funders[funder].balance = getRefundAmountForFunder(funder).add(newPayment);
@@ -305,7 +305,7 @@ contract StakeTreeXOverY {
     }
 
     // Update withdrawal entry
-    // funders[funder].withdrawalEntry = withdrawalCounter;
+    funders[funder].withdrawalEntry = withdrawalCounter;
   }
 
   function addTokenization(string tokenName, string tokenSymbol, uint8 tokenDecimals ) external onlyByBeneficiary {
