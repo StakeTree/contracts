@@ -350,17 +350,53 @@ contract('StakeTreeXOverY', function(accounts) {
       assert.equal(balance, 10000, "Contract has 10000 wei balance");
     }); // 1000
 
+    it("should get correct withdrawal amount at future withdrawal 10", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+10);
+      assert.equal(futureWithdrawal, 1000, "Future withdrawal at 10 is 1000");
+    });
+
+    it("should get correct withdrawal amount at future withdrawal 11", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+11);
+      assert.equal(futureWithdrawal, 0, "Future withdrawal at 11 is 0");
+    });
+
     it("[account e] should add funds to the contract", async () => {
       await instance.fund(5, {value: 10000, from: account_e});
       const balance = await instance.getContractBalance.call();
       assert.equal(balance, 20000, "Contract has 20000 wei balance");
     }); // 2000
 
+    it("should get correct withdrawal amount at future withdrawal 5", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+5);
+      assert.equal(futureWithdrawal, 3000, "Future withdrawal at 5 is 3000");
+    });
+
+    it("should get correct withdrawal amount at future withdrawal 6", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+6);
+      assert.equal(futureWithdrawal, 1000, "Future withdrawal at 6 is 1000");
+    });
+
     it("[account f] should add funds to the contract", async () => {
       await instance.fund(20, {value: 10000, from: account_f});
       const balance = await instance.getContractBalance.call();
       assert.equal(balance, 30000, "Contract has 30000 wei balance");
     }); // 500
+
+    it("should get correct withdrawal amount at future withdrawal 15", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+15);
+      assert.equal(futureWithdrawal, 500, "Future withdrawal at 15 is 500");
+    });
+
+    it("should get correct withdrawal amount at future withdrawal 6", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+6);
+      assert.equal(futureWithdrawal, 1500, "Future withdrawal at 6 is 1600");
+    });
 
     it("should get total funders as 3", async () => {
       const totalFunders = await instance.getCurrentTotalFunders.call();
@@ -373,6 +409,18 @@ contract('StakeTreeXOverY', function(accounts) {
       const balance = await instance.getContractBalance.call();
       assert.equal(balance, 38000, "Contract has 38000 wei balance");
     }); // 2000
+
+    it("should get correct withdrawal amount at future withdrawal 4", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+4);
+      assert.equal(futureWithdrawal, 5500, "Future withdrawal at 6 is 1600");
+    });
+
+    it("should get correct withdrawal amount at future withdrawal 5", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+5);
+      assert.equal(futureWithdrawal, 3500, "Future withdrawal at 6 is 1600");
+    });
 
     // E 10000 -> 18000
     it("[account e] should have correct refund amount", async () => {
@@ -432,58 +480,76 @@ contract('StakeTreeXOverY', function(accounts) {
       }
     });
 
-    // // Account F tops up
-    // // F 270 -> 600
-    // it("[account f] should add funds to the contract again", async () => {
-    //   await web3.eth.sendTransaction({gas: 150000, from: account_f, to: instance.address, value: 330});
-    //   const balance = await instance.getContractBalance.call();
-    //   assert.equal(balance, 1500, "Contract has 1500 wei balance");
-    // });
+    it("should get correct withdrawal amount at future withdrawal 4", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+3);
+      assert.equal(futureWithdrawal, 4500, "Future withdrawal at 4 is 4500");
+    });
 
-    // it("[account f] should get balance", async () => {
-    //   const balance = await instance.getFunderBalance.call(account_f);
-    //   assert.equal(balance, 600, "Account F has 600 wei balance");
-    // });
+    it("should get correct withdrawal amount at future withdrawal 5", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+4);
+      assert.equal(futureWithdrawal, 2500, "Future withdrawal at 5 is 2500");
+    });
 
-    // // Withdraw
-    // it("should withdraw to beneficiary", async () => {
-    //   await instance.withdraw();
-    //   const balanceAfter = await instance.getContractBalance.call();
-    //   assert.equal(balanceAfter, 1350, "Beneficiary has withdrawn 10%");
-    // });
+    // Account F tops up
+    // F 270 -> 600
+    it("[account f] should add funds to the contract again", async () => {
+      await instance.fund(5, {value: 8000, from: account_f});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 31500, "Contract has 31500 wei balance");
+    });
 
-    // // E 900 -> 810
-    // it("[account e] should have correct withdrawal amount", async () => {
-    //   const totalRefund = await instance.getRefundAmountForFunder.call(account_e);
-    //   assert.equal(totalRefund, 810, "Account E has 567 left to withdraw");
-    // });
+    it("[account f] should get balance", async () => {
+      const balance = await instance.getFunderBalance.call(account_f);
+      assert.equal(balance, 17500, "Account F has 17500 wei balance");
+    });
 
-    // // F 600 -> 540
-    // it("[account f] should have correct withdrawal amount", async () => {
-    //   const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
-    //   assert.equal(totalRefund, 540, "Account F has 540 left to withdraw");
-    // });
+    it("should get correct withdrawal amount at future withdrawal 5", async () => {
+      const currentWithdrawalCounter = await instance.withdrawalCounter.call();
+      const futureWithdrawal = await instance.getWithdrawalAt.call(currentWithdrawalCounter.c[0]+4);
+      assert.equal(futureWithdrawal, 4100, "Future withdrawal at 5 is 4100");
+    });
 
-    // it("should show get withdrawal counter", async () => {
-    //   const counter = await instance.getWithdrawalCounter.call();
-    //   assert.equal(counter, 8, "Counter is 8");
-    // });
+    // Withdraw
+    it("should get correct next withdrawal amount", async () => {
+      const nextWithdrawal = await instance.getNextWithdrawalAmount.call();
+      assert.equal(nextWithdrawal, 6100, "Next withdrawal is 6100");
+    });
 
-    // // Refund last two accounts
-    // // 1350 -> 540
-    // it("[account e] should refund their funds", async () => {
-    //   await instance.refund({from: account_e});
-    //   const balance = await instance.getContractBalance.call();
-    //   assert.equal(balance, 540, "Account E has been refunded 810. Wallet balance is now 540");
-    // });
+    it("should withdraw to beneficiary", async () => {
+      await instance.withdraw();
+      const balanceAfter = await instance.getContractBalance.call();
+      assert.equal(balanceAfter, 25400, "Beneficiary has withdrawn");
+    });
 
-    // // 540 -> 0
-    // it("[account f] should refund their funds", async () => {
-    //   const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
-    //   await instance.refund({from: account_f});
-    //   const balance = await instance.getContractBalance.call();
-    //   assert.equal(balance, 0, "Account F has been refunded 540. Wallet balance is now 0");
-    // });
+    // E 14000-4000
+    it("[account e] should have correct refund amount", async () => {
+      const totalRefund = await instance.getRefundAmountForFunder.call(account_e);
+      assert.equal(totalRefund, 10000, "Account E has 10000 left to withdraw");
+    });
+
+    // F
+    it("[account f] should have correct refund amount", async () => {
+      const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
+      assert.equal(totalRefund, 15400, "Account F has 15400 left to withdraw");
+    });
+
+    // Refund last two accounts
+    // 1350 -> 540
+    it("[account e] should refund their funds", async () => {
+      await instance.refund({from: account_e});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 15400, "Account E has been refunded 10000. Wallet balance is now 15400");
+    });
+
+    // 540 -> 0
+    it("[account f] should refund their funds", async () => {
+      const totalRefund = await instance.getRefundAmountForFunder.call(account_f);
+      await instance.refund({from: account_f});
+      const balance = await instance.getContractBalance.call();
+      assert.equal(balance, 0, "Account F has been refunded 15400. Wallet balance is now 0");
+    });
 
   });
 });
