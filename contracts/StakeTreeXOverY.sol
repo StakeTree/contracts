@@ -123,6 +123,8 @@ contract StakeTreeXOverY {
         withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
         funders[msg.sender].fundingAmounts[i] = amountPerInterval;
       }
+
+       funders[msg.sender].balance = getRefundAmountForFunder(msg.sender); // Calculates based on actual divided amounts
     }
     else {
       consolidate(msg.sender, duration, msg.value);
@@ -286,9 +288,6 @@ contract StakeTreeXOverY {
     // Update contribution
     funders[funder].contribution = getFunderContribution(funder);
     
-    // Update balance
-    funders[funder].balance = getRefundAmountForFunder(funder).add(newPayment);
-
     // Update allocated withdrawal amounts
     uint amountPerInterval = newPayment/duration;
     uint until = duration.add(withdrawalCounter);
@@ -296,13 +295,16 @@ contract StakeTreeXOverY {
     for(uint i=from; i<=until; i++) {
       withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
       funders[msg.sender].fundingAmounts[i] = funders[msg.sender].fundingAmounts[i].add(amountPerInterval);
-    }
+    } 
 
     // Update until
     // Only update this if the until is smaller than a new duration
     if(funders[funder].until < until) {
       funders[funder].until = until;
     }
+
+    // Update balance
+    funders[funder].balance = getRefundAmountForFunder(funder); // Calculates based on the amount
 
     // Update withdrawal entry
     funders[funder].withdrawalEntry = withdrawalCounter;
