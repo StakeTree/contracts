@@ -117,7 +117,7 @@ contract StakeTreeXOverY {
         until: until
       });
 
-      uint amountPerInterval = msg.value/duration;
+      uint amountPerInterval = msg.value.div(duration);
       uint from = withdrawalCounter+1;
       for(uint i=from; i<=until; i++) {
         withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
@@ -289,7 +289,7 @@ contract StakeTreeXOverY {
     funders[funder].contribution = getFunderContribution(funder);
     
     // Update allocated withdrawal amounts
-    uint amountPerInterval = newPayment/duration;
+    uint amountPerInterval = newPayment.div(duration);
     uint until = duration.add(withdrawalCounter);
     uint from = withdrawalCounter+1;
     for(uint i=from; i<=until; i++) {
