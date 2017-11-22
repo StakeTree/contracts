@@ -33,7 +33,6 @@ contract StakeTreeXOverY {
   address public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
   uint public withdrawalPeriod; // How long the beneficiary has to wait withdraw
-  uint public minimumFundingAmount; // Setting used for setting minimum amounts to fund contract with
   uint public lastWithdrawal; // Last withdrawal time
   uint public nextWithdrawal; // Next withdrawal time
 
@@ -49,8 +48,7 @@ contract StakeTreeXOverY {
     address beneficiaryAddress, 
     uint withdrawalPeriodInit, 
     uint withdrawalStart, 
-    uint sunsetWithdrawPeriodInit,
-    uint minimumFundingAmountInit) {
+    uint sunsetWithdrawPeriodInit) {
 
     beneficiary = beneficiaryAddress;
     withdrawalPeriod = withdrawalPeriodInit;
@@ -58,8 +56,6 @@ contract StakeTreeXOverY {
 
     lastWithdrawal = withdrawalStart; 
     nextWithdrawal = lastWithdrawal + withdrawalPeriod;
-
-    minimumFundingAmount = minimumFundingAmountInit;
 
     contractStartTime = now;
   }
@@ -137,8 +133,6 @@ contract StakeTreeXOverY {
 
     Payment(msg.sender, msg.value);
   }
-
-  // Pure functions
 
   // Getter functions
   function getRefundAmountForFunder(address addr) public constant returns (uint) {
@@ -222,17 +216,7 @@ contract StakeTreeXOverY {
     return getWithdrawalEntryForFunder(funder) < withdrawalCounter;
   }
 
-  function getHowManyWithdrawalsForFunder(address addr) private constant returns (uint) {
-    return withdrawalCounter.sub(getWithdrawalEntryForFunder(addr));
-  }
-
-  // State changing functions
-  function setMinimumFundingAmount(uint amount) external onlyByBeneficiary {
-    require(amount > 0);
-    minimumFundingAmount = amount;
-  }
-
-  function withdraw() external onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive  {
+  function withdraw() external onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive {
     // Check
     uint amount = getNextWithdrawalAmount();
 
@@ -250,7 +234,7 @@ contract StakeTreeXOverY {
   // Refunding by funder
   // Only funders can refund their own funding
   // Can only be sent back to the same address it was funded with
-  // We also remove the funder if they succesfully exit with their funds
+  // We also remove the funder
   function refund() external onlyByFunder {
     // Check
     uint walletBalance = this.balance;
