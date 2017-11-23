@@ -110,6 +110,7 @@ contract StakeTreeXOverY {
       totalCurrentFunders = totalCurrentFunders.add(1); // Increase total funder count
       uint until = duration.add(withdrawalCounter);
 
+      // Add new funder
       funders[msg.sender] = Funder({
         exists: true,
         balance: msg.value,
@@ -119,12 +120,10 @@ contract StakeTreeXOverY {
         until: until
       });
 
-      uint amountPerInterval = msg.value.div(duration);
+      // Update allocations
       uint from = withdrawalCounter+1;
-      for(uint i=from; i<=until; i++) {
-        withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].add(amountPerInterval);
-        funders[msg.sender].fundingAmountsAllocated[i] = amountPerInterval;
-      }
+      uint amountPerInterval = msg.value.div(duration);
+      updateAllocations(msg.sender, amountPerInterval, duration, from, until);
 
       // Update dust
       // Store the dust that's left if division dropped some wei due to no decimals in solidity
@@ -274,6 +273,19 @@ contract StakeTreeXOverY {
     totalCurrentFunders = totalCurrentFunders.sub(1);
   }
 
+  function updateAllocations(
+    address funder, 
+    uint amountPerInterval, 
+    uint duration,
+    uint from,
+    uint until) private {
+   
+    for(uint i=from; i<=until; i++) {
+      withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].add(amountPerInterval);
+      funders[funder].fundingAmountsAllocated[i] = funders[funder].fundingAmountsAllocated[i].add(amountPerInterval);
+    }
+  }
+
   function updateDust(uint newPayment, uint amountPerInterval, uint duration) private returns (uint) {
     uint actualAmount = amountPerInterval.mul(duration);
     if(actualAmount < newPayment) {
@@ -293,13 +305,10 @@ contract StakeTreeXOverY {
     funders[funder].contribution = getFunderContribution(funder);
     
     // Update allocated withdrawal amounts
-    uint amountPerInterval = newPayment.div(duration);
-    uint until = duration.add(withdrawalCounter);
     uint from = withdrawalCounter+1;
-    for(uint i=from; i<=until; i++) {
-      withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].add(amountPerInterval);
-      funders[funder].fundingAmountsAllocated[i] = funders[funder].fundingAmountsAllocated[i].add(amountPerInterval);
-    }
+    uint until = duration.add(withdrawalCounter);
+    uint amountPerInterval = newPayment.div(duration);
+    updateAllocations(funder, amountPerInterval, duration, from, until);
 
     // Update until
     // Only update this if the until is smaller than a new duration
