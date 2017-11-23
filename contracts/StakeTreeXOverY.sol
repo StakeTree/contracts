@@ -14,11 +14,11 @@ contract StakeTreeXOverY {
     uint contribution;
     uint contributionClaimed;
     uint until;
-    mapping(uint => uint) fundingAmounts;
+    mapping(uint => uint) fundingAmountsAllocated;
   }
 
   mapping(address => Funder) public funders;
-  mapping(uint => uint) public withdrawalAmounts;
+  mapping(uint => uint) public withdrawalAmountsAllocated;
   uint public dust = 0;
 
   bool public live = true; // For sunsetting contract
@@ -122,8 +122,8 @@ contract StakeTreeXOverY {
       uint amountPerInterval = msg.value.div(duration);
       uint from = withdrawalCounter+1;
       for(uint i=from; i<=until; i++) {
-        withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
-        funders[msg.sender].fundingAmounts[i] = amountPerInterval;
+        withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].add(amountPerInterval);
+        funders[msg.sender].fundingAmountsAllocated[i] = amountPerInterval;
       }
 
       // Update dust
@@ -147,7 +147,7 @@ contract StakeTreeXOverY {
 
     uint from = withdrawalCounter+1;
     for(uint i=from; i<=until; i++) {
-      totalLeft = totalLeft.add(funders[addr].fundingAmounts[i]);
+      totalLeft = totalLeft.add(funders[addr].fundingAmountsAllocated[i]);
     }
 
     return totalLeft;
@@ -158,15 +158,15 @@ contract StakeTreeXOverY {
   }
 
   function getNextWithdrawalAmount() public constant returns (uint) {
-    return withdrawalAmounts[withdrawalCounter+1];
+    return withdrawalAmountsAllocated[withdrawalCounter+1];
   }
 
   function getWithdrawalAt(uint index) public constant returns (uint) {
-    return withdrawalAmounts[index];
+    return withdrawalAmountsAllocated[index];
   }
 
   function getFunderAllocationAt(address addr, uint index) public constant returns (uint) {
-    return funders[addr].fundingAmounts[index];
+    return funders[addr].fundingAmountsAllocated[index];
   }
 
   function getFunderContribution(address funder) public constant returns (uint) {
@@ -248,12 +248,12 @@ contract StakeTreeXOverY {
 
     // Effects
     // Deduct allocated amounts for beneficiary
-    // And nullify fundingAmounts in funder struct
+    // And nullify fundingAmountsAllocated in funder struct
     uint until = getFunderDurationLeft(msg.sender);
     uint from = withdrawalCounter+1;
     for(uint i=from; i<=until; i++) {
-      withdrawalAmounts[i] = withdrawalAmounts[i].sub(funders[msg.sender].fundingAmounts[i]);
-      funders[msg.sender].fundingAmounts[i] = 0;
+      withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].sub(funders[msg.sender].fundingAmountsAllocated[i]);
+      funders[msg.sender].fundingAmountsAllocated[i] = 0;
     }
 
     removeFunder();
@@ -297,8 +297,8 @@ contract StakeTreeXOverY {
     uint until = duration.add(withdrawalCounter);
     uint from = withdrawalCounter+1;
     for(uint i=from; i<=until; i++) {
-      withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
-      funders[funder].fundingAmounts[i] = funders[funder].fundingAmounts[i].add(amountPerInterval);
+      withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].add(amountPerInterval);
+      funders[funder].fundingAmountsAllocated[i] = funders[funder].fundingAmountsAllocated[i].add(amountPerInterval);
     }
 
     // Update until
