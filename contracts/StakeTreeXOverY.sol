@@ -126,13 +126,12 @@ contract StakeTreeXOverY {
         funders[msg.sender].fundingAmounts[i] = amountPerInterval;
       }
 
-      uint correctBalance = getRefundAmountForFunder(msg.sender);
-      if(correctBalance < msg.value) {
-        uint diff = msg.value.sub(correctBalance);
-        dust = dust.add(diff);
-      }
+      // Update dust
+      // Store the dust that's left if division dropped some wei due to no decimals in solidity
+      updateDust(msg.value, amountPerInterval, duration);
       
-      funders[msg.sender].balance = correctBalance; // Calculates based on actual divided amounts
+      // Update to actual balance after dividing pieces up
+      funders[msg.sender].balance = getRefundAmountForFunder(msg.sender); // Calculates based on actual divided amounts
     }
     else {
       consolidate(msg.sender, duration, msg.value);
@@ -275,6 +274,15 @@ contract StakeTreeXOverY {
     totalCurrentFunders = totalCurrentFunders.sub(1);
   }
 
+  function updateDust(uint newPayment, uint amountPerInterval, uint duration) private returns (uint) {
+    uint actualAmount = amountPerInterval.mul(duration);
+    if(actualAmount < newPayment) {
+      dust = dust.add(newPayment.sub(actualAmount));
+    }
+
+    return dust;
+  }
+
   /*
   * This is a bookkeeping function which updates the state for the funder
   * when top up their funds.
@@ -299,13 +307,10 @@ contract StakeTreeXOverY {
       funders[funder].until = until;
     }
 
-    // Update balance
-    uint newBalanceAdditionAfterDivision = amountPerInterval.mul(duration);
-    if(newBalanceAdditionAfterDivision < newPayment) {
-      uint diff = newPayment.sub(newBalanceAdditionAfterDivision);
-      dust = dust.add(diff);
-    }
+    // Update dust
+    updateDust(newPayment, amountPerInterval, duration);
     
+    // Update balance
     funders[funder].balance = getRefundAmountForFunder(funder); // Calculates based on actual divided amounts
 
     // Update withdrawal entry
