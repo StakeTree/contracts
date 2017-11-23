@@ -66,6 +66,11 @@ contract('StakeTreeXOverY', function(accounts) {
       assert.equal(balance, 1000, "Contract has 1000 wei balance");
     });
 
+    it("should confirm that dust amount is correct", async () => {
+      const dust = await instance.dust.call();
+      assert.equal(dust, 1, "Dust balance should be 1 wei balance");
+    });
+
     it("[account a] should show correct refund amout for funder", async () => {
       const balance = await instance.getRefundAmountForFunder.call(account_a);
       assert.equal(balance, 999, "Account A has 999 wei balance");
@@ -87,6 +92,11 @@ contract('StakeTreeXOverY', function(accounts) {
       assert.equal(balance, 2000, "Contract has 2000 wei balance");
     });
 
+    it("should confirm that dust amount is correct", async () => {
+      const dust = await instance.dust.call();
+      assert.equal(dust, 2, "Dust balance should be 2 wei balance");
+    });
+
     it("[account b] should add funds to the contract", async () => {
       await instance.fund(9, {value: 500, from: account_b});
       const balance = await instance.getContractBalance.call();
@@ -101,6 +111,11 @@ contract('StakeTreeXOverY', function(accounts) {
     it("[account b] should show correct refund amout for funder", async () => {
       const balance = await instance.getRefundAmountForFunder.call(account_b);
       assert.equal(balance, 495, "Account B has 495 wei balance");
+    });
+
+    it("should confirm that dust amount is correct", async () => {
+      const dust = await instance.dust.call();
+      assert.equal(dust, 7, "Dust balance should be 7 wei balance");
     });
 
     it("should withdraw to beneficiary", async () => {
@@ -168,8 +183,6 @@ contract('StakeTreeXOverY', function(accounts) {
       const balance = await instance.getRefundAmountForFunder.call(account_a);
       assert.equal(balance, 385, "Account A can withdraw 385 wei balance");
     });
-
-    
 
     it("[account a] should refund funder", async () => {
       await instance.refund({from: account_a});

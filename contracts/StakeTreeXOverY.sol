@@ -19,6 +19,7 @@ contract StakeTreeXOverY {
 
   mapping(address => Funder) public funders;
   mapping(uint => uint) public withdrawalAmounts;
+  uint public dust = 0;
 
   bool public live = true; // For sunsetting contract
   uint public totalCurrentFunders = 0; // Keeps track of total funders
@@ -125,7 +126,13 @@ contract StakeTreeXOverY {
         funders[msg.sender].fundingAmounts[i] = amountPerInterval;
       }
 
-       funders[msg.sender].balance = getRefundAmountForFunder(msg.sender); // Calculates based on actual divided amounts
+      uint correctBalance = getRefundAmountForFunder(msg.sender);
+      if(correctBalance < msg.value) {
+        uint diff = msg.value.sub(correctBalance);
+        dust = dust.add(diff);
+      }
+      
+      funders[msg.sender].balance = correctBalance; // Calculates based on actual divided amounts
     }
     else {
       consolidate(msg.sender, duration, msg.value);
@@ -283,8 +290,8 @@ contract StakeTreeXOverY {
     uint from = withdrawalCounter+1;
     for(uint i=from; i<=until; i++) {
       withdrawalAmounts[i] = withdrawalAmounts[i].add(amountPerInterval);
-      funders[msg.sender].fundingAmounts[i] = funders[msg.sender].fundingAmounts[i].add(amountPerInterval);
-    } 
+      funders[funder].fundingAmounts[i] = funders[funder].fundingAmounts[i].add(amountPerInterval);
+    }
 
     // Update until
     // Only update this if the until is smaller than a new duration
@@ -293,7 +300,13 @@ contract StakeTreeXOverY {
     }
 
     // Update balance
-    funders[funder].balance = getRefundAmountForFunder(funder); // Calculates based on the amount
+    uint newBalanceAdditionAfterDivision = amountPerInterval.mul(duration);
+    if(newBalanceAdditionAfterDivision < newPayment) {
+      uint diff = newPayment.sub(newBalanceAdditionAfterDivision);
+      dust = dust.add(diff);
+    }
+    
+    funders[funder].balance = getRefundAmountForFunder(funder); // Calculates based on actual divided amounts
 
     // Update withdrawal entry
     funders[funder].withdrawalEntry = withdrawalCounter;
