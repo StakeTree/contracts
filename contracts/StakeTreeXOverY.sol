@@ -223,15 +223,20 @@ contract StakeTreeXOverY {
 
   function withdraw() external onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive {
     // Check
-    uint amount = getNextWithdrawalAmount();
+    uint walletBalance = this.balance;
+    uint amount = getNextWithdrawalAmount().add(dust);
 
     // Effects
     withdrawalCounter = withdrawalCounter.add(1);
     lastWithdrawal = now; // For tracking purposes
     nextWithdrawal = nextWithdrawal + withdrawalPeriod; // Fixed period increase
-
+    dust = 0; // Clear dust
+ 
     // Interaction
     beneficiary.transfer(amount);
+
+    // Make sure this worked as intended
+    assert(this.balance == walletBalance-amount);
 
     Withdrawal(amount);
   }
