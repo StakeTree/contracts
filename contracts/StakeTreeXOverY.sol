@@ -122,12 +122,12 @@ contract StakeTreeXOverY {
 
       // Update allocations
       uint from = withdrawalCounter+1;
-      uint amountPerInterval = msg.value.div(duration);
-      updateAllocations(msg.sender, amountPerInterval, duration, from, until);
+      uint amountPerWithdrawal = msg.value.div(duration);
+      updateAllocations(msg.sender, amountPerWithdrawal, duration, from, until);
 
       // Update dust
       // Store the dust that's left if division dropped some wei due to no decimals in solidity
-      updateDust(msg.value, amountPerInterval, duration);
+      updateDust(msg.value, amountPerWithdrawal, duration);
       
       // Update to actual balance after dividing pieces up
       funders[msg.sender].balance = getRefundAmountForFunder(msg.sender); // Calculates based on actual divided amounts
@@ -280,19 +280,19 @@ contract StakeTreeXOverY {
 
   function updateAllocations(
     address funder, 
-    uint amountPerInterval, 
+    uint amountPerWithdrawal, 
     uint duration,
     uint from,
     uint until) private {
    
     for(uint i=from; i<=until; i++) {
-      withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].add(amountPerInterval);
-      funders[funder].fundingAmountsAllocated[i] = funders[funder].fundingAmountsAllocated[i].add(amountPerInterval);
+      withdrawalAmountsAllocated[i] = withdrawalAmountsAllocated[i].add(amountPerWithdrawal);
+      funders[funder].fundingAmountsAllocated[i] = funders[funder].fundingAmountsAllocated[i].add(amountPerWithdrawal);
     }
   }
 
-  function updateDust(uint newPayment, uint amountPerInterval, uint duration) private returns (uint) {
-    uint actualAmount = amountPerInterval.mul(duration);
+  function updateDust(uint newPayment, uint amountPerWithdrawal, uint duration) private returns (uint) {
+    uint actualAmount = amountPerWithdrawal.mul(duration);
     if(actualAmount < newPayment) {
       dust = dust.add(newPayment.sub(actualAmount));
     }
@@ -312,8 +312,8 @@ contract StakeTreeXOverY {
     // Update allocated withdrawal amounts
     uint from = withdrawalCounter+1;
     uint until = duration.add(withdrawalCounter);
-    uint amountPerInterval = newPayment.div(duration);
-    updateAllocations(funder, amountPerInterval, duration, from, until);
+    uint amountPerWithdrawal = newPayment.div(duration);
+    updateAllocations(funder, amountPerWithdrawal, duration, from, until);
 
     // Update until
     // Only update this if the until is smaller than a new duration
@@ -322,7 +322,7 @@ contract StakeTreeXOverY {
     }
 
     // Update dust
-    updateDust(newPayment, amountPerInterval, duration);
+    updateDust(newPayment, amountPerWithdrawal, duration);
     
     // Update balance
     funders[funder].balance = getRefundAmountForFunder(funder); // Calculates based on actual divided amounts
