@@ -302,7 +302,7 @@ contract StakeTreeXOverY {
 
   /*
   * This is a bookkeeping function which updates the state for the funder
-  * when top up their funds.
+  * when they top up their funds.
   */
 
   function consolidate(address funder, uint duration, uint newPayment) private {
