@@ -123,7 +123,7 @@ contract StakeTreeXOverY {
       // Update allocations
       uint from = withdrawalCounter+1;
       uint amountPerWithdrawal = msg.value.div(duration);
-      updateAllocations(msg.sender, amountPerWithdrawal, duration, from, until);
+      updateAllocations(msg.sender, amountPerWithdrawal, from, until);
 
       // Update dust
       // Store the dust that's left if division dropped some wei due to no decimals in solidity
@@ -281,7 +281,6 @@ contract StakeTreeXOverY {
   function updateAllocations(
     address funder, 
     uint amountPerWithdrawal, 
-    uint duration,
     uint from,
     uint until) private {
    
@@ -313,7 +312,7 @@ contract StakeTreeXOverY {
     uint from = withdrawalCounter+1;
     uint until = duration.add(withdrawalCounter);
     uint amountPerWithdrawal = newPayment.div(duration);
-    updateAllocations(funder, amountPerWithdrawal, duration, from, until);
+    updateAllocations(funder, amountPerWithdrawal, from, until);
 
     // Update until
     // Only update this if the until is smaller than a new duration
@@ -394,10 +393,10 @@ contract StakeTreeXOverY {
   * enabledTransfers
   * 
   */
-  function tokenContractClaimTokens(address _token) onlyByBeneficiary onlyWhenTokenized {
+  function tokenContractClaimTokens(address _token) external onlyByBeneficiary onlyWhenTokenized {
     tokenContract.claimTokens(_token);
   }
-  function tokenContractEnableTransfers(bool _transfersEnabled) onlyByBeneficiary onlyWhenTokenized {
+  function tokenContractEnableTransfers(bool _transfersEnabled) external onlyByBeneficiary onlyWhenTokenized {
     tokenContract.enableTransfers(_transfersEnabled);
   }
 }
