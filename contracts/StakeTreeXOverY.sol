@@ -102,7 +102,7 @@ contract StakeTreeXOverY {
     // Cap this on any interval also due to increasing gas costs.
     require(duration > 0 && duration <= 52); 
     // Make sure lowest value is more than highest duration
-    // Otherwise with division the value would be zero per interal
+    // Otherwise with division the value would be zero per withdrawal
     require(msg.value >= 52); 
 
     // Only increase total funders when we have a new funder
