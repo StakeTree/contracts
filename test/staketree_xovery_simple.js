@@ -146,9 +146,9 @@ contract('StakeTreeXOverY', function(accounts) {
       }
     });
 
-    it("[account a] should fail adding funds over 52 duration", async () => {
+    it("[account a] should fail adding funds over 26 duration", async () => {
       try {
-        await instance.fund(53, {value: 1000, from: account_a});
+        await instance.fund(27, {value: 1000, from: account_a});
         assert.equal(true, false);
       } catch (err) {
         assert.equal(err.message, ERROR_INVALID_OPCODE);
