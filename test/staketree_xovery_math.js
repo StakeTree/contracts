@@ -76,11 +76,6 @@ contract('StakeTreeXOverY', function(accounts) {
       assert.equal(balance, 999, "Account A has 999 wei balance");
     });
 
-    it("[account a] should show correct balance on funder struct", async () => {
-      const funder = await instance.funders.call(account_a);
-      assert.equal(funder[1], 999, "Account A has 999 wei balance");
-    });
-
     it("should get total funders", async () => {
       const totalFunders = await instance.getCurrentTotalFunders.call();
       assert.equal(totalFunders, 1, "There are 1 total funders");
@@ -165,11 +160,6 @@ contract('StakeTreeXOverY', function(accounts) {
     it("[account a] should get correct refund amount", async () => {
       const balance = await instance.getRefundAmountForFunder.call(account_a);
       assert.equal(balance, 495, "Account A can withdraw 495 wei balance");
-    });
-
-    it("[account a] should get correct balance amount in struct", async () => {
-      const funder = await instance.funders.call(account_a);
-      assert.equal(funder[1], 495, "Account A has 385 wei balance");
     });
 
     it("should withdraw to beneficiary", async () => {

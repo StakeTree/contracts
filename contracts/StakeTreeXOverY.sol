@@ -9,7 +9,6 @@ contract StakeTreeXOverY {
 
   struct Funder {
     bool exists;
-    uint balance;
     uint withdrawalEntry;
     uint contribution;
     uint contributionClaimed;
@@ -113,7 +112,6 @@ contract StakeTreeXOverY {
       // Add new funder
       funders[msg.sender] = Funder({
         exists: true,
-        balance: msg.value,
         withdrawalEntry: withdrawalCounter, // Set the withdrawal counter. Ie at which withdrawal the funder "entered" the patronage contract
         contribution: 0,
         contributionClaimed: 0,
@@ -128,9 +126,6 @@ contract StakeTreeXOverY {
       // Update dust
       // Store the dust that's left if division dropped some wei due to no decimals in solidity
       updateDust(msg.value, amountPerWithdrawal, duration);
-      
-      // Update to actual balance after dividing pieces up
-      funders[msg.sender].balance = getRefundAmountForFunder(msg.sender); // Calculates based on actual divided amounts
     }
     else {
       consolidate(msg.sender, duration, msg.value);
@@ -141,10 +136,13 @@ contract StakeTreeXOverY {
 
   // Getter functions
   function getRefundAmountForFunder(address addr) public constant returns (uint) {
+    return getRefundAmountForFunderFrom(addr, withdrawalCounter+1); 
+  }
+
+  function getRefundAmountForFunderFrom(address addr, uint from) public constant returns (uint) {
     uint totalLeft = 0;
     uint until = getFunderDurationLeft(addr);
 
-    uint from = withdrawalCounter+1;
     for(uint i=from; i<=until; i++) {
       totalLeft = totalLeft.add(funders[addr].fundingAmountsAllocated[i]);
     }
@@ -171,7 +169,7 @@ contract StakeTreeXOverY {
   function getFunderContribution(address funder) public constant returns (uint) {
     // Only calculate on-the-fly if funder has not been updated
     if(shouldUpdateFunder(funder)) {
-      uint oldBalance = funders[funder].balance;
+      uint oldBalance = getRefundAmountForFunderFrom(funder, getWithdrawalEntryForFunder(funder)+1);
       uint newBalance = getRefundAmountForFunder(funder);
       uint contribution = oldBalance.sub(newBalance);
       return funders[funder].contribution.add(contribution);
@@ -323,9 +321,6 @@ contract StakeTreeXOverY {
     // Update dust
     updateDust(newPayment, amountPerWithdrawal, duration);
     
-    // Update balance
-    funders[funder].balance = getRefundAmountForFunder(funder); // Calculates based on actual divided amounts
-
     // Update withdrawal entry
     funders[funder].withdrawalEntry = withdrawalCounter;
   }
