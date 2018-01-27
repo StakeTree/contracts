@@ -6,6 +6,7 @@ contract StakeTreeWithTokenization {
   using SafeMath for uint256;
 
   uint public version = 2;
+  uint public minorVersion = 1;
 
   struct Funder {
     bool exists;
@@ -315,10 +316,11 @@ contract StakeTreeWithTokenization {
     require(claimAmount > 0);
 
     // Claim tokens
+    uint tokenAmount = claimAmount.mul(1000);
     funders[msg.sender].contributionClaimed = contributionAmount;
-    tokenContract.generateTokens(msg.sender, claimAmount);
+    tokenContract.generateTokens(msg.sender, tokenAmount);
 
-    TokensClaimed(msg.sender, claimAmount);
+    TokensClaimed(msg.sender, tokenAmount);
   }
 
   /*
