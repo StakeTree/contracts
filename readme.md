@@ -7,7 +7,7 @@ Current contracts:
 ## MVP Contract
 The MVP contract currently powers the StakeTree project. It is intentionally minimal with only core functionality. There are three main actions:
 1) Anyone can fund the contract by paying directly to the address.
-2) The beneficiary can withdraw 10% each time after a set time (two weeks is the suggested time).
+2) The beneficiary can withdraw 10% each time after a set period (one week is the suggested).
 3) Funders can withdraw what's left of their funds at any time.
 
 ### Initial Variables
@@ -22,7 +22,7 @@ uint minimumFundingAmountInit
 * `beneficiaryAddress` - This is the address for the beneficiary who can withdraw funds. The beneficiary also has additional priviliges. They can update the minimum funding amount, sunset the contract and swipe it after sunset withdrawal period. This address cannot be changed.
 * `withdrawalPeriodInit` - This sets the withdrawal period interval in seconds. After how many seconds the beneficiary can withdraw each time. The suggested time is 604800 seconds, which is one week.
 * `withdrawalStart` - This sets the initial start time of the contract. Usually setting it to the current time when contract deployed is a good idea. If you have to start the withdrawal time further in the future, you can extend if you like.
-* `sunsetWithdrawPeriodInit` - The amount of time in seconds needs to lapse before the beneficiary can swip the funds after sunsetting the contract. Suggested time is 5184000 seconds, which is two months.
+* `sunsetWithdrawPeriodInit` - The amount of time in seconds needs to lapse before the beneficiary can swipe the funds after sunsetting the contract. Suggested time is 5184000 seconds, which is two months.
 * `minimumFundingAmountInit` - The minimum amount in wei that funders can contribute at a time. Suggested amount 0.01 ether or 10000000000000000 wei.
 
 ### Funding contract
