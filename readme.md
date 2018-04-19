@@ -55,5 +55,22 @@ As additional point, when an existing funder tops up their funding, we calculate
 ## Deployment
 Feel free to deploy this contract if you need for yourself. Do contact me as I'd love to hear how people are using StakeTree contract. While the StakeTree.com is being built, I can also deploy this contract for anyone who's interested in getting funded but need some technical help. Email me: nieldlr@gmail.com
 
+## Running Locally
+
+```
+cd /path/to/repo
+npm install
+cp localConfig.js.dist localConfig.js 
+# make sure to edit localConfig.js with your memonic!
+```
+
+Now the fun part!
+
+```
+truffle compile
+truffle test
+truffle deploy
+```
+
 ## Contributing
 Feel free to contribute any code or fork this project. If you have ideas, open up an issue or contact me via email (above) as well.
