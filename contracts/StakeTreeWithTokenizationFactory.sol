@@ -1,4 +1,4 @@
-pragma solidity 0.4.15;
+pragma solidity >=0.5.0 < 0.6.0;
 import './StakeTreeWithTokenization.sol';
 
 contract StakeTreeWithTokenizationFactory {
@@ -6,27 +6,27 @@ contract StakeTreeWithTokenizationFactory {
   mapping(address => address[]) public contracts;
 
   function newContract(
-    address beneficiaryAddress, 
-    uint withdrawalPeriodInit, 
-    uint withdrawalStart, 
+    address payable beneficiaryAddress,
+    uint withdrawalPeriodInit,
+    uint withdrawalStart,
     uint sunsetWithdrawPeriodInit,
     uint minimumFundingAmountInit ) public returns (address newAddress) {
 
     StakeTreeWithTokenization staketree = new StakeTreeWithTokenization(
-      beneficiaryAddress, 
+      beneficiaryAddress,
       withdrawalPeriodInit,
-      withdrawalStart, 
+      withdrawalStart,
       sunsetWithdrawPeriodInit,
       minimumFundingAmountInit
     );
 
-    contracts[msg.sender].push(staketree);
+    contracts[msg.sender].push(address(staketree));
     contractCount += 1;
 
-    return staketree;
+    return address(staketree);
   }
 
-  function getContractAddress() public constant returns (address[]) {
+  function getContractAddress() public view returns (address[] memory) {
     return contracts[msg.sender];
   }
 }

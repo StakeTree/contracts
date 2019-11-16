@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity >=0.5.0 < 0.6.0;
 import './SafeMath.sol';
 
 contract StakeTreeMVP {
@@ -17,8 +17,8 @@ contract StakeTreeMVP {
   uint public totalCurrentFunders = 0; // Keeps track of total funders
   uint public withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
   uint public sunsetWithdrawDate;
- 
-  address public beneficiary; // Address for beneficiary
+
+  address payable public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
   uint public withdrawalPeriod; // How long the beneficiary has to wait withdraw
   uint public minimumFundingAmount; // Setting used for setting minimum amounts to fund contract with
@@ -27,18 +27,18 @@ contract StakeTreeMVP {
 
   uint public contractStartTime; // For accounting purposes
 
-  function StakeTreeMVP(
-    address beneficiaryAddress, 
-    uint withdrawalPeriodInit, 
-    uint withdrawalStart, 
+  constructor(
+    address payable beneficiaryAddress,
+    uint withdrawalPeriodInit,
+    uint withdrawalStart,
     uint sunsetWithdrawPeriodInit,
-    uint minimumFundingAmountInit) {
+    uint minimumFundingAmountInit) public {
 
     beneficiary = beneficiaryAddress;
     withdrawalPeriod = withdrawalPeriodInit;
     sunsetWithdrawalPeriod = sunsetWithdrawPeriodInit;
 
-    lastWithdrawal = withdrawalStart; 
+    lastWithdrawal = withdrawalStart;
     nextWithdrawal = lastWithdrawal + withdrawalPeriod;
 
     minimumFundingAmount = minimumFundingAmountInit;
@@ -75,7 +75,7 @@ contract StakeTreeMVP {
   /*
   * External accounts can pay directly to contract to fund it.
   */
-  function () payable {
+  function () external payable {
     fund();
   }
 
@@ -113,7 +113,7 @@ contract StakeTreeMVP {
   * Due to no floating points in Solidity, we will lose some fidelity
   * if there's wei on the last digit. The beneficiary loses a neglibible amount
   * to withdraw but this benefits the beneficiary again on later withdrawals.
-  * We multiply by 10 (which corresponds to the 10%) 
+  * We multiply by 10 (which corresponds to the 10%)
   * then divide by 100 to get the actual part.
   */
   function calculateWithdrawalAmount(uint startAmount) public returns (uint){
@@ -123,10 +123,10 @@ contract StakeTreeMVP {
   /*
   * This function calculates the refund amount for the funder.
   * Due to no floating points in Solidity, we will lose some fidelity.
-  * The funder loses a neglibible amount to refund. 
+  * The funder loses a neglibible amount to refund.
   * The left over wei gets pooled to the fund.
   */
-  function calculateRefundAmount(uint amount, uint withdrawalTimes) public returns (uint) {    
+  function calculateRefundAmount(uint amount, uint withdrawalTimes) public returns (uint) {
     for(uint i=0; i<withdrawalTimes; i++){
       amount = amount.mul(9).div(10);
     }
@@ -137,45 +137,45 @@ contract StakeTreeMVP {
 
   /*
   * To calculate the refund amount we look at how many times the beneficiary
-  * has withdrawn since the funder added their funds. 
+  * has withdrawn since the funder added their funds.
   * We use that deduct 10% for each withdrawal.
   */
 
-  function getRefundAmountForFunder(address addr) public constant returns (uint) {
+  function getRefundAmountForFunder(address addr) public returns (uint) {
     uint amount = funders[addr].balance;
     uint withdrawalTimes = getHowManyWithdrawalsForFunder(addr);
     return calculateRefundAmount(amount, withdrawalTimes);
   }
 
-  function getBeneficiary() public constant returns (address) {
+  function getBeneficiary() public view returns (address) {
     return beneficiary;
   }
 
-  function getCurrentTotalFunders() public constant returns (uint) {
+  function getCurrentTotalFunders() public view returns (uint) {
     return totalCurrentFunders;
   }
 
-  function getWithdrawalCounter() public constant returns (uint) {
+  function getWithdrawalCounter() public view returns (uint) {
     return withdrawalCounter;
   }
 
-  function getWithdrawalEntryForFunder(address addr) public constant returns (uint) {
+  function getWithdrawalEntryForFunder(address addr) public view returns (uint) {
     return funders[addr].withdrawalEntry;
   }
 
-  function getContractBalance() public constant returns (uint256 balance) {
-    balance = this.balance;
+  function getContractBalance() public view returns (uint256 balance) {
+    balance = address(this).balance;
   }
 
-  function getFunderBalance(address funder) public constant returns (uint256) {
+  function getFunderBalance(address funder) public returns (uint256) {
     return getRefundAmountForFunder(funder);
   }
 
-  function isFunder(address addr) public constant returns (bool) {
+  function isFunder(address addr) public view returns (bool) {
     return funders[addr].exists;
   }
 
-  function getHowManyWithdrawalsForFunder(address addr) private constant returns (uint) {
+  function getHowManyWithdrawalsForFunder(address addr) private view returns (uint) {
     return withdrawalCounter.sub(getWithdrawalEntryForFunder(addr));
   }
 
@@ -187,7 +187,7 @@ contract StakeTreeMVP {
 
   function withdraw() external onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive  {
     // Check
-    uint amount = calculateWithdrawalAmount(this.balance);
+    uint amount = calculateWithdrawalAmount(address(this).balance);
 
     // Effects
     withdrawalCounter = withdrawalCounter.add(1);
@@ -204,7 +204,7 @@ contract StakeTreeMVP {
   // We also remove the funder if they succesfully exit with their funds
   function refund() external onlyByFunder {
     // Check
-    uint walletBalance = this.balance;
+    uint walletBalance = address(this).balance;
     uint amount = getRefundAmountForFunder(msg.sender);
     require(amount > 0);
 
@@ -215,7 +215,7 @@ contract StakeTreeMVP {
     msg.sender.transfer(amount);
 
     // Make sure this worked as intended
-    assert(this.balance == walletBalance-amount);
+    assert(address(this).balance == walletBalance-amount);
   }
 
   // Used when the funder wants to remove themselves as a funder
@@ -237,9 +237,9 @@ contract StakeTreeMVP {
     live = false;
   }
 
-  function swipe(address recipient) external onlyWhenSunset onlyByBeneficiary {
+  function swipe(address payable recipient) external onlyWhenSunset onlyByBeneficiary {
     require(now >= sunsetWithdrawDate);
 
-    recipient.transfer(this.balance);
+    recipient.transfer(address(this).balance);
   }
 }

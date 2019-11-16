@@ -1,4 +1,4 @@
-pragma solidity 0.4.15;
+pragma solidity >=0.5.0 < 0.6.0;
 import './SafeMath.sol';
 import './minime/MiniMeToken.sol';
 
@@ -22,13 +22,13 @@ contract StakeTreeWithTokenization {
   uint public totalCurrentFunders = 0; // Keeps track of total funders
   uint public withdrawalCounter = 0; // Keeps track of how many withdrawals have taken place
   uint public sunsetWithdrawDate;
-  
+
   MiniMeToken public tokenContract;
   MiniMeTokenFactory public tokenFactory;
   bool public tokenized = false;
   bool public canClaimTokens = false;
 
-  address public beneficiary; // Address for beneficiary
+  address payable public beneficiary; // Address for beneficiary
   uint public sunsetWithdrawalPeriod; // How long it takes for beneficiary to swipe contract when put into sunset mode
   uint public withdrawalPeriod; // How long the beneficiary has to wait withdraw
   uint public minimumFundingAmount; // Setting used for setting minimum amounts to fund contract with
@@ -43,18 +43,18 @@ contract StakeTreeWithTokenization {
   event TokensClaimed(address indexed funder, uint amount);
   event Sunset(bool hasSunset);
 
-  function StakeTreeWithTokenization(
-    address beneficiaryAddress, 
-    uint withdrawalPeriodInit, 
-    uint withdrawalStart, 
+  constructor(
+    address payable beneficiaryAddress,
+    uint withdrawalPeriodInit,
+    uint withdrawalStart,
     uint sunsetWithdrawPeriodInit,
-    uint minimumFundingAmountInit) {
+    uint minimumFundingAmountInit) public {
 
     beneficiary = beneficiaryAddress;
     withdrawalPeriod = withdrawalPeriodInit;
     sunsetWithdrawalPeriod = sunsetWithdrawPeriodInit;
 
-    lastWithdrawal = withdrawalStart; 
+    lastWithdrawal = withdrawalStart;
     nextWithdrawal = lastWithdrawal + withdrawalPeriod;
 
     minimumFundingAmount = minimumFundingAmountInit;
@@ -96,7 +96,7 @@ contract StakeTreeWithTokenization {
   /*
   * External accounts can pay directly to contract to fund it.
   */
-  function () payable {
+  function () external payable {
     fund();
   }
 
@@ -120,11 +120,11 @@ contract StakeTreeWithTokenization {
         contributionClaimed: 0
       });
     }
-    else { 
+    else {
       consolidateFunder(msg.sender, msg.value);
     }
 
-    Payment(msg.sender, msg.value);
+    emit Payment(msg.sender, msg.value);
   }
 
   // Pure functions
@@ -134,7 +134,7 @@ contract StakeTreeWithTokenization {
   * Due to no floating points in Solidity, we will lose some fidelity
   * if there's wei on the last digit. The beneficiary loses a neglibible amount
   * to withdraw but this benefits the beneficiary again on later withdrawals.
-  * We multiply by 10 (which corresponds to the 10%) 
+  * We multiply by 10 (which corresponds to the 10%)
   * then divide by 100 to get the actual part.
   */
   function calculateWithdrawalAmount(uint startAmount) public returns (uint){
@@ -144,10 +144,10 @@ contract StakeTreeWithTokenization {
   /*
   * This function calculates the refund amount for the funder.
   * Due to no floating points in Solidity, we will lose some fidelity.
-  * The funder loses a neglibible amount to refund. 
+  * The funder loses a neglibible amount to refund.
   * The left over wei gets pooled to the fund.
   */
-  function calculateRefundAmount(uint amount, uint withdrawalTimes) public returns (uint) {    
+  function calculateRefundAmount(uint amount, uint withdrawalTimes) public returns (uint) {
     for(uint i=0; i<withdrawalTimes; i++){
       amount = amount.mul(9).div(10);
     }
@@ -158,11 +158,11 @@ contract StakeTreeWithTokenization {
 
   /*
   * To calculate the refund amount we look at how many times the beneficiary
-  * has withdrawn since the funder added their funds. 
+  * has withdrawn since the funder added their funds.
   * We use that deduct 10% for each withdrawal.
   */
 
-  function getRefundAmountForFunder(address addr) public constant returns (uint) {
+  function getRefundAmountForFunder(address addr) public returns (uint) {
     // Only calculate on-the-fly if funder has not been updated
     if(shouldUpdateFunder(addr)) {
       uint amount = funders[addr].balance;
@@ -174,7 +174,7 @@ contract StakeTreeWithTokenization {
     }
   }
 
-  function getFunderContribution(address funder) public constant returns (uint) {
+  function getFunderContribution(address funder) public returns (uint) {
     // Only calculate on-the-fly if funder has not been updated
     if(shouldUpdateFunder(funder)) {
       uint oldBalance = funders[funder].balance;
@@ -187,47 +187,47 @@ contract StakeTreeWithTokenization {
     }
   }
 
-  function getBeneficiary() public constant returns (address) {
+  function getBeneficiary() public view returns (address) {
     return beneficiary;
   }
 
-  function getCurrentTotalFunders() public constant returns (uint) {
+  function getCurrentTotalFunders() public view returns (uint) {
     return totalCurrentFunders;
   }
 
-  function getWithdrawalCounter() public constant returns (uint) {
+  function getWithdrawalCounter() public view returns (uint) {
     return withdrawalCounter;
   }
 
-  function getWithdrawalEntryForFunder(address addr) public constant returns (uint) {
+  function getWithdrawalEntryForFunder(address addr) public view returns (uint) {
     return funders[addr].withdrawalEntry;
   }
 
-  function getContractBalance() public constant returns (uint256 balance) {
-    balance = this.balance;
+  function getContractBalance() public view returns (uint256 balance) {
+    balance = address(this).balance;
   }
 
-  function getFunderBalance(address funder) public constant returns (uint256) {
+  function getFunderBalance(address funder) public returns (uint256) {
     return getRefundAmountForFunder(funder);
   }
 
-  function getFunderContributionClaimed(address addr) public constant returns (uint) {
+  function getFunderContributionClaimed(address addr) public view returns (uint) {
     return funders[addr].contributionClaimed;
   }
 
-  function isFunder(address addr) public constant returns (bool) {
+  function isFunder(address addr) public view returns (bool) {
     return funders[addr].exists;
   }
 
-  function isTokenized() public constant returns (bool) {
+  function isTokenized() public view returns (bool) {
     return tokenized;
   }
 
-  function shouldUpdateFunder(address funder) public constant returns (bool) {
+  function shouldUpdateFunder(address funder) public view returns (bool) {
     return getWithdrawalEntryForFunder(funder) < withdrawalCounter;
   }
 
-  function getHowManyWithdrawalsForFunder(address addr) private constant returns (uint) {
+  function getHowManyWithdrawalsForFunder(address addr) private view returns (uint) {
     return withdrawalCounter.sub(getWithdrawalEntryForFunder(addr));
   }
 
@@ -239,7 +239,7 @@ contract StakeTreeWithTokenization {
 
   function withdraw() external onlyByBeneficiary onlyAfterNextWithdrawalDate onlyWhenLive  {
     // Check
-    uint amount = calculateWithdrawalAmount(this.balance);
+    uint amount = calculateWithdrawalAmount(address(this).balance);
 
     // Effects
     withdrawalCounter = withdrawalCounter.add(1);
@@ -249,7 +249,7 @@ contract StakeTreeWithTokenization {
     // Interaction
     beneficiary.transfer(amount);
 
-    Withdrawal(amount);
+    emit Withdrawal(amount);
   }
 
   // Refunding by funder
@@ -258,7 +258,7 @@ contract StakeTreeWithTokenization {
   // We also remove the funder if they succesfully exit with their funds
   function refund() external onlyByFunder {
     // Check
-    uint walletBalance = this.balance;
+    uint walletBalance = address(this).balance;
     uint amount = getRefundAmountForFunder(msg.sender);
     require(amount > 0);
 
@@ -268,10 +268,10 @@ contract StakeTreeWithTokenization {
     // Interaction
     msg.sender.transfer(amount);
 
-    Refund(msg.sender, amount);
+    emit Refund(msg.sender, amount);
 
     // Make sure this worked as intended
-    assert(this.balance == walletBalance-amount);
+    assert(address(this).balance == walletBalance-amount);
   }
 
   // Used when the funder wants to remove themselves as a funder
@@ -295,11 +295,11 @@ contract StakeTreeWithTokenization {
     funders[funder].withdrawalEntry = withdrawalCounter;
   }
 
-  function addTokenization(string tokenName, string tokenSymbol, uint8 tokenDecimals ) external onlyByBeneficiary {
+  function addTokenization(string calldata tokenName, string calldata tokenSymbol, uint8 tokenDecimals ) external onlyByBeneficiary {
     require(!isTokenized());
 
     tokenFactory = new MiniMeTokenFactory();
-    tokenContract = tokenFactory.createCloneToken(0x0, 0, tokenName, tokenDecimals, tokenSymbol, true);
+    tokenContract = tokenFactory.createCloneToken(address(0), 0, tokenName, tokenDecimals, tokenSymbol, true);
 
     tokenized = true;
     canClaimTokens = true;
@@ -320,7 +320,7 @@ contract StakeTreeWithTokenization {
     funders[msg.sender].contributionClaimed = contributionAmount;
     tokenContract.generateTokens(msg.sender, tokenAmount);
 
-    TokensClaimed(msg.sender, tokenAmount);
+    emit TokensClaimed(msg.sender, tokenAmount);
   }
 
   /*
@@ -343,26 +343,26 @@ contract StakeTreeWithTokenization {
     sunsetWithdrawDate = now.add(sunsetWithdrawalPeriod);
     live = false;
 
-    Sunset(true);
+    emit Sunset(true);
   }
 
-  function swipe(address recipient) external onlyWhenSunset onlyByBeneficiary {
+  function swipe(address payable recipient) external onlyWhenSunset onlyByBeneficiary {
     require(now >= sunsetWithdrawDate);
 
-    recipient.transfer(this.balance);
+    recipient.transfer(address(this).balance);
   }
 
   /* --- Token Contract Forwarding Controller Functions --- */
-  /* 
+  /*
   * Allows beneficiary to call two additional functions on the token contract:
   * claimTokens
   * enabledTransfers
-  * 
+  *
   */
-  function tokenContractClaimTokens(address _token) onlyByBeneficiary onlyWhenTokenized {
+  function tokenContractClaimTokens(address payable _token) public onlyByBeneficiary onlyWhenTokenized {
     tokenContract.claimTokens(_token);
   }
-  function tokenContractEnableTransfers(bool _transfersEnabled) onlyByBeneficiary onlyWhenTokenized {
+  function tokenContractEnableTransfers(bool _transfersEnabled) public onlyByBeneficiary onlyWhenTokenized {
     tokenContract.enableTransfers(_transfersEnabled);
   }
 }
